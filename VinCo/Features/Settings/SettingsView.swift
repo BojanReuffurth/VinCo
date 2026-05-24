@@ -10,7 +10,6 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { Theme.bg0.ignoresSafeArea() }
             VStack(spacing: 0) {
                 tabBar
                 Rectangle().fill(Theme.divide).frame(height: 1)
@@ -28,12 +27,12 @@ struct SettingsView: View {
                     .padding(16).padding(.bottom, 40)
                     .animation(.easeInOut(duration: 0.15), value: store.tab)
                 }
-                .background(Theme.bg0).scrollIndicators(.hidden)
+                .scrollIndicators(.hidden)
             }
+            .background(Theme.bg0.ignoresSafeArea())
             .navigationTitle("Settings")
             .toolbarBackground(Theme.bg1, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 

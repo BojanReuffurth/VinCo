@@ -10,7 +10,6 @@ struct EditView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { Theme.bg0.ignoresSafeArea() }
             ScrollView {
                 VStack(spacing: 20) {
                     coverBlock
@@ -21,12 +20,11 @@ struct EditView: View {
                 }
                 .padding(16).padding(.bottom, 40)
             }
-            .background(Theme.bg0).scrollIndicators(.hidden)
+            .background(Theme.bg0.ignoresSafeArea()).scrollIndicators(.hidden)
             .navigationTitle(store.isEditing ? "Edit Record" : "Add Record")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Theme.bg1, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }.foregroundStyle(settings.accentColor)

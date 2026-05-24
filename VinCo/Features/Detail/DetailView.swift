@@ -13,7 +13,6 @@ struct DetailView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { Theme.bg0.ignoresSafeArea() }
             ScrollView {
                 VStack(spacing: 0) {
                     coverHeader
@@ -23,13 +22,16 @@ struct DetailView: View {
                     trackBody
                 }
             }
-            .background(Theme.bg0).scrollIndicators(.hidden)
+            .background(Theme.bg0.ignoresSafeArea()).scrollIndicators(.hidden)
             .navigationTitle("").navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Theme.bg1, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar { navBar }
-            .sheet(item: $store.scope(state: \.edit, action: \.edit)) { EditView(store: $0) }
+            .sheet(item: $store.scope(state: \.edit, action: \.edit)) { s in
+                EditView(store: s)
+                    .preferredColorScheme(settings.preferredScheme)
+                    .fontDesign(.monospaced)
+            }
             .fullScreenCover(isPresented: $store.showFullArt) { fullArt }
             .confirmationDialog("Delete \"\(rec.album)\"?", isPresented: $store.showDeleteAlert, titleVisibility: .visible) {
                 Button("Delete", role: .destructive) { ctx.delete(rec); dismiss() }
@@ -51,8 +53,8 @@ struct DetailView: View {
             .frame(maxWidth: .infinity).frame(height: 310).clipped()
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(rec.artist).font(.system(size: 22, weight: .bold))
-                Text(rec.album).font(.system(size: 16)).opacity(0.82)
+                Text(rec.album).font(.system(size: 22, weight: .bold))
+                Text(rec.artist).font(.system(size: 16)).opacity(0.82)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16).padding(.bottom, 16).padding(.top, 80)

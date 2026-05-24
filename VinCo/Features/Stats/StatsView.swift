@@ -23,9 +23,9 @@ struct StatsView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { Theme.bg0.ignoresSafeArea() }
             ScrollView {
                 VStack(spacing: 20) {
+                    pinToHomeSection
                     summaryGrid
                     if paid > 0 || value > 0 { valuationCard }
                     if !genres.isEmpty  { barChart("GENRES",    data: genres,  horizontal: true) }
@@ -34,14 +34,48 @@ struct StatsView: View {
                 }
                 .padding(16).padding(.bottom, 32)
             }
-            .background(Theme.bg0).scrollIndicators(.hidden)
+            .background(Theme.bg0.ignoresSafeArea()).scrollIndicators(.hidden)
             .navigationTitle("Stats")
             .toolbarBackground(Theme.bg1, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 
+    // MARK: – Pin to Home
+    private var pinToHomeSection: some View {
+        RBSection("Pin to Header") {
+            ForEach(Array(pinOptions.enumerated()), id: \.offset) { idx, item in
+                RBRow(divider: idx < pinOptions.count - 1) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.label)
+                                .font(.system(size: 14)).foregroundStyle(Theme.textP)
+                            Text(item.desc)
+                                .font(.system(size: 11)).foregroundStyle(Theme.textT)
+                        }
+                        Spacer()
+                        Toggle("", isOn: Binding(
+                            get: { settings.pinnedStats.contains(item.key) },
+                            set: { on in
+                                var p = settings.pinnedStats
+                                if on { p.insert(item.key) } else { p.remove(item.key) }
+                                settings.pinnedStats = p
+                            }
+                        )).tint(settings.accentColor)
+                    }
+                }
+            }
+        }
+    }
+
+    private let pinOptions: [(key: String, label: String, desc: String)] = [
+        (key: "records",  label: "Records",          desc: "Total records in your collection"),
+        (key: "wishlist", label: "Wishlist",          desc: "Number of records on your wishlist"),
+        (key: "genres",   label: "Genres",            desc: "Distinct genre count"),
+        (key: "value",    label: "Collection Value",  desc: "Sum of current record values"),
+    ]
+
+    // MARK: – Summary grid
     private var summaryGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             statCard("\(col.count)", "Records",   "square.stack.3d.up.fill", settings.accentColor)
@@ -63,7 +97,7 @@ struct StatsView: View {
 
     private var valuationCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("COLLECTION VALUE").font(.system(size: 11, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.textT)
+            Text("COLLECTION VALUE").font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textT)
             HStack(spacing: 28) {
                 valItem("PAID",  "\(settings.currency)\(Int(paid))",  .white)
                 Rectangle().fill(Theme.divide).frame(width:1,height:40)
@@ -80,14 +114,14 @@ struct StatsView: View {
 
     private func valItem(_ l: String, _ v: String, _ c: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(l).font(.system(size: 10, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.textT)
+            Text(l).font(.system(size: 10, weight: .semibold)).foregroundStyle(Theme.textT)
             Text(v).font(.system(size: 20, weight: .bold)).foregroundStyle(c)
         }
     }
 
     private func barChart(_ title: String, data: [(String,Int)], horizontal: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(title).font(.system(size: 11, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.textT)
+            Text(title).font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textT)
             Chart(data, id: \.0) { item in
                 if horizontal {
                     BarMark(x: .value("n", item.1), y: .value("l", item.0))
@@ -106,13 +140,13 @@ struct StatsView: View {
 
     private var topArtistsCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("TOP ARTISTS").font(.system(size: 11, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.textT)
+            Text("TOP ARTISTS").font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textT)
             ForEach(Array(artists.enumerated()), id: \.element.0) { i, item in
                 HStack {
-                    Text("\(i+1)").font(.system(size: 12, design: .monospaced)).foregroundStyle(Theme.textT).frame(width: 20)
+                    Text("\(i+1)").font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textT).frame(width: 20)
                     Text(item.0).font(.system(size: 14)).foregroundStyle(Theme.textP)
                     Spacer()
-                    Text("\(item.1)").font(.system(size: 13, weight: .medium, design: .monospaced)).foregroundStyle(settings.accentColor)
+                    Text("\(item.1)").font(.system(size: 13, weight: .medium)).foregroundStyle(settings.accentColor)
                 }
                 if i < artists.count-1 { Rectangle().fill(Theme.divide).frame(height:1) }
             }

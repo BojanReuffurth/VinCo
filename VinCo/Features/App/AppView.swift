@@ -14,7 +14,6 @@ struct AppView: View {
         VStack(spacing: 0) {
             appHeader
             Rectangle().fill(Theme.divide).frame(height: 1)
-            collectionTabs
             TabView(selection: $store.tab.sending(\.tabSelected)) {
                 CollectionView(store: store.scope(state: \.collection, action: \.collection))
                     .tag(AppFeature.Tab.collection)
@@ -29,21 +28,26 @@ struct AppView: View {
         .overlay(alignment: .bottomTrailing) {
             fab.padding(.trailing, 20).padding(.bottom, 16)
         }
-        .preferredColorScheme(.dark)
-        .onChange(of: settings.accentHex) { _, new in AppearanceSetup.apply(accent: new) }
+        .fontDesign(.monospaced)
+        .preferredColorScheme(settings.preferredScheme)
+        .onChange(of: settings.accentHex)  { _, new in AppearanceSetup.apply(accent: new) }
+        .onChange(of: settings.schemeKey)  { _, _   in AppearanceSetup.apply(accent: settings.accentHex) }
         .sheet(isPresented: $showStats) {
             StatsView(store: store.scope(state: \.stats, action: \.stats))
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(settings.preferredScheme)
+                .fontDesign(.monospaced)
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(store: store.scope(state: \.settings, action: \.settings))
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(settings.preferredScheme)
+                .fontDesign(.monospaced)
         }
     }
 
     // MARK: – App header
     private var appHeader: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
+            // Logo
             HStack(spacing: 8) {
                 ZStack {
                     Circle().fill(settings.accentColor.opacity(0.15)).frame(width: 32, height: 32)
@@ -54,6 +58,28 @@ struct AppView: View {
                     .font(.system(size: 20, weight: .bold)).foregroundStyle(Theme.textP)
             }
             Spacer()
+
+            // Pinned stat badges
+            if !pinnedStatItems.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(pinnedStatItems, id: \.0) { key, label, value in
+                        VStack(spacing: 1) {
+                            Text(value)
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(settings.accentColor)
+                            Text(label)
+                                .font(.system(size: 8, weight: .semibold))
+                                .foregroundStyle(Theme.textT)
+                        }
+                        .frame(minWidth: 28)
+                    }
+                }
+                .padding(.horizontal, 8).padding(.vertical, 5)
+                .background(Theme.bg2)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
+            // Stats button
             Button { showStats = true } label: {
                 Image(systemName: "chart.bar.fill")
                     .font(.system(size: 14))
@@ -63,6 +89,8 @@ struct AppView: View {
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
+
+            // Settings button
             Button { showSettings = true } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 14))
@@ -77,31 +105,21 @@ struct AppView: View {
         .background(Theme.bg1)
     }
 
-    // MARK: – Collection / Wishlist top tabs
-    private var collectionTabs: some View {
-        HStack(spacing: 0) {
-            tabBtn(.collection, "COLLECTION", collectionRecords.count)
-            tabBtn(.wishlist,   "WISHLIST",   wishlistRecords.count)
-            Spacer()
+    // MARK: – Pinned stat items for header display
+    private var pinnedStatItems: [(String, String, String)] {
+        var items: [(String, String, String)] = []
+        let pinned = settings.pinnedStats
+        if pinned.contains("records")  { items.append(("records",  "REC",  "\(collectionRecords.count)")) }
+        if pinned.contains("wishlist") { items.append(("wishlist", "WL",   "\(wishlistRecords.count)")) }
+        if pinned.contains("genres")   {
+            let gc = Set(collectionRecords.compactMap { $0.genre.isEmpty ? nil : $0.genre }).count
+            items.append(("genres", "GNRS", "\(gc)"))
         }
-        .background(Theme.bg1)
-    }
-
-    private func tabBtn(_ tab: AppFeature.Tab, _ label: String, _ count: Int) -> some View {
-        Button { store.send(.tabSelected(tab)) } label: {
-            VStack(spacing: 0) {
-                Text("\(label) (\(count))")
-                    .font(.system(size: 12,
-                                  weight: store.tab == tab ? .semibold : .regular,
-                                  design: .monospaced))
-                    .foregroundStyle(store.tab == tab ? settings.accentColor : Theme.textT)
-                    .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 10)
-                Rectangle()
-                    .fill(store.tab == tab ? settings.accentColor : Color.clear)
-                    .frame(height: 2)
-            }
+        if pinned.contains("value") {
+            let v = collectionRecords.compactMap(\.currentValue).reduce(0, +)
+            items.append(("value", "VAL", "\(settings.currency)\(Int(v))"))
         }
-        .buttonStyle(.plain)
+        return items
     }
 
     // MARK: – Bottom counts bar
@@ -110,23 +128,25 @@ struct AppView: View {
             Button { store.send(.tabSelected(.collection)) } label: {
                 VStack(spacing: 2) {
                     Text("\(collectionRecords.count)")
-                        .font(.system(size: 22, weight: .bold, design: .monospaced))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(store.tab == .collection ? settings.accentColor : Theme.textT)
                     Text("COLLECTION")
-                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                        .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(Theme.textT)
                 }
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.plain)
+
             Rectangle().fill(Theme.divide).frame(width: 1, height: 32)
+
             Button { store.send(.tabSelected(.wishlist)) } label: {
                 VStack(spacing: 2) {
                     Text("\(wishlistRecords.count)")
-                        .font(.system(size: 22, weight: .bold, design: .monospaced))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(store.tab == .wishlist ? settings.accentColor : Theme.textT)
                     Text("WISHLIST")
-                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                        .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(Theme.textT)
                 }
                 .frame(maxWidth: .infinity)

@@ -2,14 +2,23 @@ import UIKit; import SwiftUI
 enum AppearanceSetup {
     static func apply(accent: String = "#E8A87C") {
         let ac = UIColor(Color(hex: accent))
+
+        // Dynamic colors that flip with trait collection
+        let bg1Text = UIColor { t in
+            t.userInterfaceStyle == .dark ? UIColor(Color(hex: "#111111")) : UIColor(Color(hex: "#FFFFFF"))
+        }
+        let titleColor = UIColor { t in
+            t.userInterfaceStyle == .dark ? .white : UIColor(Color(hex: "#0D0D0D"))
+        }
+        let monoFont17 = UIFont(name: "Courier New", size: 17) ?? .monospacedSystemFont(ofSize: 17, weight: .semibold)
+        let monoFont32 = UIFont(name: "Courier New", size: 32) ?? .monospacedSystemFont(ofSize: 32, weight: .bold)
+
         let nav = UINavigationBarAppearance()
         nav.configureWithOpaqueBackground()
-        nav.backgroundColor = UIColor(Theme.bg1)
-        nav.shadowColor = UIColor(Theme.divide)
-        nav.titleTextAttributes      = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 17, weight: .semibold)]
-        nav.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 32, weight: .bold)]
-        let back = UIImage(systemName: "chevron.left")?.withTintColor(.white, renderingMode: .alwaysOriginal)
-        nav.setBackIndicatorImage(back, transitionMaskImage: back)
+        nav.backgroundColor    = bg1Text   // resolved per trait
+        nav.shadowColor        = UIColor(Theme.divide)
+        nav.titleTextAttributes      = [.foregroundColor: titleColor, .font: monoFont17]
+        nav.largeTitleTextAttributes = [.foregroundColor: titleColor, .font: monoFont32]
         UINavigationBar.appearance().standardAppearance   = nav
         UINavigationBar.appearance().compactAppearance    = nav
         UINavigationBar.appearance().scrollEdgeAppearance = nav

@@ -13,4 +13,11 @@ extension Color {
         self.init(.sRGB, red: Double(r)/255, green: Double(g)/255,
                   blue: Double(b)/255, opacity: Double(a)/255)
     }
+
+    /// Returns a color that automatically switches between light and dark appearances.
+    init(light: Color, dark: Color) {
+        self = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+    }
 }

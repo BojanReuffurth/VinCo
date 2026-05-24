@@ -1,20 +1,26 @@
 import SwiftUI
 
 enum Theme {
-    static let bg0     = Color(hex: "#0A0A0A")
-    static let bg1     = Color(hex: "#111111")
-    static let bg2     = Color(hex: "#1C1C1C")
-    static let bg3     = Color(hex: "#272727")
-    static let divide  = Color.white.opacity(0.07)
-    static let textP   = Color.white
-    static let textS   = Color.white.opacity(0.55)
-    static let textT:   Color   = Color.white.opacity(0.30)
-    static let cardR:   CGFloat = 14
-    static let sectR:   CGFloat = 16
-    static let chipRadius: CGFloat = 20
+    // MARK: – Adaptive backgrounds (dark → current, light → iOS-standard grays)
+    static let bg0    = Color(light: Color(hex: "#F2F2F7"), dark: Color(hex: "#0A0A0A"))
+    static let bg1    = Color(light: Color(hex: "#FFFFFF"), dark: Color(hex: "#111111"))
+    static let bg2    = Color(light: Color(hex: "#E8E8ED"), dark: Color(hex: "#1C1C1C"))
+    static let bg3    = Color(light: Color(hex: "#D8D8DD"), dark: Color(hex: "#272727"))
+
+    // MARK: – Adaptive dividers & text
+    static let divide = Color(light: Color.black.opacity(0.10), dark: Color.white.opacity(0.07))
+    static let textP  = Color(light: Color(hex: "#0D0D0D"),     dark: Color.white)
+    static let textS  = Color(light: Color.black.opacity(0.55), dark: Color.white.opacity(0.55))
+    static let textT  = Color(light: Color.black.opacity(0.35), dark: Color.white.opacity(0.30))
+
+    // MARK: – Shape constants
+    static let cardR:       CGFloat = 14
+    static let sectR:       CGFloat = 16
+    static let chipRadius:  CGFloat = 20
     static let tabBarHeight: CGFloat = 56
 
-    static func cardGrad()   -> LinearGradient {
+    // MARK: – Gradients (always dark – used over album art / vinyl)
+    static func cardGrad() -> LinearGradient {
         LinearGradient(colors: [.clear, .black.opacity(0.55), .black.opacity(0.82)],
                        startPoint: .top, endPoint: .bottom)
     }

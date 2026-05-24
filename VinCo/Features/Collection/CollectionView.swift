@@ -44,9 +44,13 @@ struct CollectionView: View {
         .background(Theme.bg0)
         .sheet(item: $store.scope(state: \.detail, action: \.detail)) { s in
             DetailView(store: s)
+                .preferredColorScheme(settings.preferredScheme)
+                .fontDesign(.monospaced)
         }
         .sheet(item: $store.scope(state: \.edit, action: \.edit)) { s in
             EditView(store: s)
+                .preferredColorScheme(settings.preferredScheme)
+                .fontDesign(.monospaced)
         }
     }
 
@@ -183,6 +187,7 @@ struct CollectionView: View {
         .padding(12)
         .background(Theme.bg1)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .onTapGesture { store.send(.recordTapped(rec)) }
     }
 
     // MARK: – Empty state
