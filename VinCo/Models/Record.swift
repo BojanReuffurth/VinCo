@@ -39,7 +39,8 @@ final class Record {
 
     static func randomColor() -> String {
         ["#E8A87C","#7CB8E8","#A87CE8","#7CE8A8","#E87C9A",
-         "#E8D87C","#7CE8D8","#E8B07C","#B07CE8","#7CE8B0"].randomElement()!
+         "#E8D87C","#E87C7C","#5ECFCF","#6674E8","#FFB085",
+         "#A8E87C","#C9B0F0","#E84444","#44C8B4","#F0C844","#B0BCC8"].randomElement()!
     }
 
     var tracks: [Track] {

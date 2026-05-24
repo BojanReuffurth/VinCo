@@ -34,7 +34,6 @@ struct CollectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
             searchBar
             filterBar
             Rectangle().fill(Theme.divide).frame(height: 1)
@@ -49,25 +48,6 @@ struct CollectionView: View {
         .sheet(item: $store.scope(state: \.edit, action: \.edit)) { s in
             EditView(store: s)
         }
-    }
-
-    // MARK: – Header
-    private var header: some View {
-        HStack(spacing: 10) {
-            Text(store.isWishlist ? "Wishlist" : "Collection")
-                .font(.system(size: 28, weight: .bold)).foregroundStyle(Theme.textP)
-            Spacer()
-            Text("\(displayed.count)")
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundStyle(Theme.textT)
-            Button { store.send(.addTapped) } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title3).foregroundStyle(settings.accentColor)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 8)
-        .background(Theme.bg1)
     }
 
     // MARK: – Search bar
@@ -139,6 +119,7 @@ struct CollectionView: View {
                 ForEach(displayed) { rec in
                     CardView(
                         record: rec,
+                        onInfo:   { store.send(.recordTapped(rec)) },
                         onEdit:   { store.send(.editTapped(rec)) },
                         onMove:   { rec.isWishlist.toggle() },
                         onDelete: { ctx.delete(rec) }
@@ -190,6 +171,10 @@ struct CollectionView: View {
                 }
             }
             Spacer()
+            Button { store.send(.recordTapped(rec)) } label: {
+                Image(systemName: "info.circle").foregroundStyle(Theme.textT)
+            }
+            .buttonStyle(.plain)
             Button { store.send(.editTapped(rec)) } label: {
                 Image(systemName: "pencil").foregroundStyle(Theme.textT)
             }

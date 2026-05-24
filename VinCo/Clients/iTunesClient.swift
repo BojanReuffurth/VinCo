@@ -1,7 +1,7 @@
 import Foundation
 import ComposableArchitecture
 
-struct iTunesFetch: Equatable {
+nonisolated struct iTunesFetch: Equatable {
     var coverURL: String?
     var itunesId: Int?
     var tracks:   [Track] = []
@@ -20,7 +20,7 @@ extension iTunesClient: DependencyKey {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let resp = try JSONDecoder().decode(SearchResp.self, from: data)
-            guard let best = bestMatch(resp.results, ar: artist.lowercased(), al: album.lowercased())
+            guard let best = await bestMatch(resp.results, ar: artist.lowercased(), al: album.lowercased())
             else { return out }
             out.itunesId = best.collectionId
             if let art = best.artworkUrl100 {
@@ -57,10 +57,10 @@ private func fetchTracks(_ id: Int) async -> [Track] {
     } catch { return [] }
 }
 
-private struct SearchResp:  Decodable { let results: [Album] }
-private struct Album:       Decodable { let collectionId: Int?; let collectionName: String?; let artistName: String?; let artworkUrl100: String? }
-private struct LookupResp:  Decodable { let results: [Item] }
-private struct Item:        Decodable { let wrapperType: String?; let trackName: String?; let trackNumber: Int?; let discNumber: Int?; let trackTimeMillis: Double?; let previewUrl: String? }
+private nonisolated struct SearchResp:  Decodable { let results: [Album] }
+private nonisolated struct Album:       Decodable { let collectionId: Int?; let collectionName: String?; let artistName: String?; let artworkUrl100: String? }
+private nonisolated struct LookupResp:  Decodable { let results: [Item] }
+private nonisolated struct Item:        Decodable { let wrapperType: String?; let trackName: String?; let trackNumber: Int?; let discNumber: Int?; let trackTimeMillis: Double?; let previewUrl: String? }
 
 extension DependencyValues {
     var iTunes: iTunesClient {

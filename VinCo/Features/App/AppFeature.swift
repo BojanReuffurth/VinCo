@@ -4,7 +4,7 @@ import SwiftUI
 
 @Reducer
 struct AppFeature {
-    enum Tab: Hashable { case collection, wishlist, stats, settings }
+    enum Tab: Hashable { case collection, wishlist }
 
     @ObservableState
     struct State: Equatable {

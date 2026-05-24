@@ -32,11 +32,11 @@ private func recordings(_ id: String) async -> [Track] {
                   duration: ($0.length ?? 0)/1000, preview: "") } }
     } catch { return [] }
 }
-private struct MBSearch:  Decodable { let releases: [MBRef] }
-private struct MBRef:     Decodable { let id: String }
-private struct MBRelease: Decodable { let media: [MBMedium]? }
-private struct MBMedium:  Decodable { let tracks: [MBTrack]? }
-private struct MBTrack:   Decodable { let title: String?; let number: String?; let length: Int? }
+private nonisolated struct MBSearch:  Decodable { let releases: [MBRef] }
+private nonisolated struct MBRef:     Decodable { let id: String }
+private nonisolated struct MBRelease: Decodable { let media: [MBMedium]? }
+private nonisolated struct MBMedium:  Decodable { let tracks: [MBTrack]? }
+private nonisolated struct MBTrack:   Decodable { let title: String?; let number: String?; let length: Int? }
 extension DependencyValues {
     var musicBrainz: MusicBrainzClient {
         get { self[MusicBrainzClient.self] }

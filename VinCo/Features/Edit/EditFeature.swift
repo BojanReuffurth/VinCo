@@ -67,7 +67,6 @@ struct EditFeature {
                 let q = state.query.trimmingCharacters(in: .whitespaces)
                 guard !q.isEmpty else { return .none }
                 state.searching = true; state.results = []
-                let token = state.record.map { _ in "" } ?? ""   // token injected from Settings in view
                 return .run { [q] send in
                     // Token passed via DiscogsClient; here we pass empty — view will inject token
                     let r = await discogs.search(q, "")

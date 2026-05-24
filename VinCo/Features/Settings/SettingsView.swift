@@ -396,9 +396,13 @@ struct SettingsView: View {
                     await MainActor.run { r.coverData = data }
                 }
                 try? await Task.sleep(nanoseconds: 300_000_000)
-                await MainActor.run { store.send(.batchProgress("Fetching covers… \(i+1) / \(missing.count)")) }
+                await MainActor.run {
+                    _ = store.send(.batchProgress("Fetching covers… \(i+1) / \(missing.count)"))
+                }
             }
-            await MainActor.run { store.send(.batchDone("Done — \(missing.count) records processed.")) }
+            await MainActor.run {
+                _ = store.send(.batchDone("Done — \(missing.count) records processed."))
+            }
         }
     }
 
@@ -418,9 +422,13 @@ struct SettingsView: View {
                     if !mb.isEmpty { await MainActor.run { r.tracks = mb } }
                 }
                 try? await Task.sleep(nanoseconds: 400_000_000)
-                await MainActor.run { store.send(.batchProgress("Fetching tracklists… \(i+1) / \(missing.count)")) }
+                await MainActor.run {
+                    _ = store.send(.batchProgress("Fetching tracklists… \(i+1) / \(missing.count)"))
+                }
             }
-            await MainActor.run { store.send(.batchDone("Done — \(missing.count) records processed.")) }
+            await MainActor.run {
+                _ = store.send(.batchDone("Done — \(missing.count) records processed."))
+            }
         }
     }
 }

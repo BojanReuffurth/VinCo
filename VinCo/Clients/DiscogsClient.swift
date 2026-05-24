@@ -31,8 +31,8 @@ extension DiscogsClient: DependencyKey {
         } catch { return [] }
     }
 }
-private struct DResp:    Decodable { let results: [DRelease] }
-private struct DRelease: Decodable { let id: Int; let title: String; let year: Int?; let label: [String]?; let country: String?; let format: [String]? }
+private nonisolated struct DResp:    Decodable { let results: [DRelease] }
+private nonisolated struct DRelease: Decodable { let id: Int; let title: String; let year: Int?; let label: [String]?; let country: String?; let format: [String]? }
 extension DependencyValues {
     var discogs: DiscogsClient {
         get { self[DiscogsClient.self] }

@@ -32,8 +32,9 @@ import Observation
     static let conditions = ["M","NM","VG+","VG","G+","G","F","P"]
     static let accents: [(String,String)] = [
         ("Amber","#E8A87C"),("Sky","#7CB8E8"),("Violet","#A87CE8"),("Mint","#7CE8A8"),
-        ("Rose","#E87C9A"),("Gold","#E8D87C"),("Teal","#7CE8D8"),("Peach","#E8B07C"),
-        ("Plum","#B07CE8"),("Spring","#7CE8B0")
+        ("Rose","#E87C9A"),("Lemon","#E8D87C"),("Coral","#E87C7C"),("Teal","#5ECFCF"),
+        ("Indigo","#6674E8"),("Peach","#FFB085"),("Lime","#A8E87C"),("Lavender","#C9B0F0"),
+        ("Crimson","#E84444"),("Turquoise","#44C8B4"),("Gold","#F0C844"),("Silver","#B0BCC8")
     ]
     static let currencies = ["€","$","£","¥","CHF","kr","₹","R$","₩","A$"]
 }
