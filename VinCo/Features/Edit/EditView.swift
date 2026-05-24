@@ -292,6 +292,11 @@ struct EditView: View {
         r.currentValue = Double(store.curValue)
         if let did = store.discogsId { r.discogsId = did }
         if !store.tracks.isEmpty { r.tracks = store.tracks }
+        // Auto-add new genre to the custom list
+        let g = store.genre.trimmingCharacters(in: .whitespaces)
+        if !g.isEmpty && !settings.allGenres.contains(g) {
+            settings.customGenres = settings.customGenres + [g]
+        }
         dismiss()
     }
 }

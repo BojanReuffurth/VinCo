@@ -36,6 +36,21 @@
 		EFF0743E2FC329A8001D748E /* CollectionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF0740C2FC329A8001D748E /* CollectionFeature.swift */; };
 		EFF0743F2FC329A8001D748E /* EditFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF074122FC329A8001D748E /* EditFeature.swift */; };
 		EFF074402FC329A8001D748E /* ColorExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF074412FC329A8001D748E /* ColorExtractor.swift */; };
+		EFF074452FC329A8001D748E /* VinCo-Icon-Sky.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074442FC329A8001D748E /* VinCo-Icon-Sky.png */; };
+		EFF074472FC329A8001D748E /* VinCo-Icon-Violet.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074462FC329A8001D748E /* VinCo-Icon-Violet.png */; };
+		EFF074492FC329A8001D748E /* VinCo-Icon-Mint.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074482FC329A8001D748E /* VinCo-Icon-Mint.png */; };
+		EFF0744B2FC329A8001D748E /* VinCo-Icon-Rose.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0744A2FC329A8001D748E /* VinCo-Icon-Rose.png */; };
+		EFF0744D2FC329A8001D748E /* VinCo-Icon-Lemon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0744C2FC329A8001D748E /* VinCo-Icon-Lemon.png */; };
+		EFF0744F2FC329A8001D748E /* VinCo-Icon-Coral.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0744E2FC329A8001D748E /* VinCo-Icon-Coral.png */; };
+		EFF074512FC329A8001D748E /* VinCo-Icon-Teal.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074502FC329A8001D748E /* VinCo-Icon-Teal.png */; };
+		EFF074532FC329A8001D748E /* VinCo-Icon-Indigo.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074522FC329A8001D748E /* VinCo-Icon-Indigo.png */; };
+		EFF074552FC329A8001D748E /* VinCo-Icon-Peach.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074542FC329A8001D748E /* VinCo-Icon-Peach.png */; };
+		EFF074572FC329A8001D748E /* VinCo-Icon-Lime.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074562FC329A8001D748E /* VinCo-Icon-Lime.png */; };
+		EFF074592FC329A8001D748E /* VinCo-Icon-Lavender.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074582FC329A8001D748E /* VinCo-Icon-Lavender.png */; };
+		EFF0745B2FC329A8001D748E /* VinCo-Icon-Crimson.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0745A2FC329A8001D748E /* VinCo-Icon-Crimson.png */; };
+		EFF0745D2FC329A8001D748E /* VinCo-Icon-Turquoise.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0745C2FC329A8001D748E /* VinCo-Icon-Turquoise.png */; };
+		EFF0745F2FC329A8001D748E /* VinCo-Icon-Gold.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0745E2FC329A8001D748E /* VinCo-Icon-Gold.png */; };
+		EFF074612FC329A8001D748E /* VinCo-Icon-Silver.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074602FC329A8001D748E /* VinCo-Icon-Silver.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +83,22 @@
 		EFF074232FC329A8001D748E /* VinylView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VinylView.swift; sourceTree = "<group>"; };
 		EFF074252FC329A8001D748E /* VinCoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VinCoApp.swift; sourceTree = "<group>"; };
 		EFF074412FC329A8001D748E /* ColorExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtractor.swift; sourceTree = "<group>"; };
+		EFF074422FC329A8001D748E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EFF074442FC329A8001D748E /* VinCo-Icon-Sky.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Sky.png"; sourceTree = "<group>"; };
+		EFF074462FC329A8001D748E /* VinCo-Icon-Violet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Violet.png"; sourceTree = "<group>"; };
+		EFF074482FC329A8001D748E /* VinCo-Icon-Mint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Mint.png"; sourceTree = "<group>"; };
+		EFF0744A2FC329A8001D748E /* VinCo-Icon-Rose.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Rose.png"; sourceTree = "<group>"; };
+		EFF0744C2FC329A8001D748E /* VinCo-Icon-Lemon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Lemon.png"; sourceTree = "<group>"; };
+		EFF0744E2FC329A8001D748E /* VinCo-Icon-Coral.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Coral.png"; sourceTree = "<group>"; };
+		EFF074502FC329A8001D748E /* VinCo-Icon-Teal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Teal.png"; sourceTree = "<group>"; };
+		EFF074522FC329A8001D748E /* VinCo-Icon-Indigo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Indigo.png"; sourceTree = "<group>"; };
+		EFF074542FC329A8001D748E /* VinCo-Icon-Peach.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Peach.png"; sourceTree = "<group>"; };
+		EFF074562FC329A8001D748E /* VinCo-Icon-Lime.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Lime.png"; sourceTree = "<group>"; };
+		EFF074582FC329A8001D748E /* VinCo-Icon-Lavender.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Lavender.png"; sourceTree = "<group>"; };
+		EFF0745A2FC329A8001D748E /* VinCo-Icon-Crimson.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Crimson.png"; sourceTree = "<group>"; };
+		EFF0745C2FC329A8001D748E /* VinCo-Icon-Turquoise.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Turquoise.png"; sourceTree = "<group>"; };
+		EFF0745E2FC329A8001D748E /* VinCo-Icon-Gold.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Gold.png"; sourceTree = "<group>"; };
+		EFF074602FC329A8001D748E /* VinCo-Icon-Silver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Silver.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,8 +139,32 @@
 				EFF074242FC329A8001D748E /* Shared */,
 				EFF074252FC329A8001D748E /* VinCoApp.swift */,
 				EFF073BB2FC32948001D748E /* Assets.xcassets */,
+				EFF074422FC329A8001D748E /* Info.plist */,
+				EFF074432FC329A8001D748E /* Icons */,
 			);
 			path = VinCo;
+			sourceTree = "<group>";
+		};
+		EFF074432FC329A8001D748E /* Icons */ = {
+			isa = PBXGroup;
+			children = (
+				EFF074442FC329A8001D748E /* VinCo-Icon-Sky.png */,
+				EFF074462FC329A8001D748E /* VinCo-Icon-Violet.png */,
+				EFF074482FC329A8001D748E /* VinCo-Icon-Mint.png */,
+				EFF0744A2FC329A8001D748E /* VinCo-Icon-Rose.png */,
+				EFF0744C2FC329A8001D748E /* VinCo-Icon-Lemon.png */,
+				EFF0744E2FC329A8001D748E /* VinCo-Icon-Coral.png */,
+				EFF074502FC329A8001D748E /* VinCo-Icon-Teal.png */,
+				EFF074522FC329A8001D748E /* VinCo-Icon-Indigo.png */,
+				EFF074542FC329A8001D748E /* VinCo-Icon-Peach.png */,
+				EFF074562FC329A8001D748E /* VinCo-Icon-Lime.png */,
+				EFF074582FC329A8001D748E /* VinCo-Icon-Lavender.png */,
+				EFF0745A2FC329A8001D748E /* VinCo-Icon-Crimson.png */,
+				EFF0745C2FC329A8001D748E /* VinCo-Icon-Turquoise.png */,
+				EFF0745E2FC329A8001D748E /* VinCo-Icon-Gold.png */,
+				EFF074602FC329A8001D748E /* VinCo-Icon-Silver.png */,
+			);
+			path = Icons;
 			sourceTree = "<group>";
 		};
 		EFF074002FC329A8001D748E /* {Models,Shared,Clients} */ = {
@@ -295,6 +350,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				EFF073BE2FC32948001D748E /* Assets.xcassets in Resources */,
+				EFF074452FC329A8001D748E /* VinCo-Icon-Sky.png in Resources */,
+				EFF074472FC329A8001D748E /* VinCo-Icon-Violet.png in Resources */,
+				EFF074492FC329A8001D748E /* VinCo-Icon-Mint.png in Resources */,
+				EFF0744B2FC329A8001D748E /* VinCo-Icon-Rose.png in Resources */,
+				EFF0744D2FC329A8001D748E /* VinCo-Icon-Lemon.png in Resources */,
+				EFF0744F2FC329A8001D748E /* VinCo-Icon-Coral.png in Resources */,
+				EFF074512FC329A8001D748E /* VinCo-Icon-Teal.png in Resources */,
+				EFF074532FC329A8001D748E /* VinCo-Icon-Indigo.png in Resources */,
+				EFF074552FC329A8001D748E /* VinCo-Icon-Peach.png in Resources */,
+				EFF074572FC329A8001D748E /* VinCo-Icon-Lime.png in Resources */,
+				EFF074592FC329A8001D748E /* VinCo-Icon-Lavender.png in Resources */,
+				EFF0745B2FC329A8001D748E /* VinCo-Icon-Crimson.png in Resources */,
+				EFF0745D2FC329A8001D748E /* VinCo-Icon-Turquoise.png in Resources */,
+				EFF0745F2FC329A8001D748E /* VinCo-Icon-Gold.png in Resources */,
+				EFF074612FC329A8001D748E /* VinCo-Icon-Silver.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,12 +538,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YD4AUPPFLH;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_FILE = VinCo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -500,12 +565,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YD4AUPPFLH;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_FILE = VinCo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

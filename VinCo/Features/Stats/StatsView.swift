@@ -70,9 +70,9 @@ struct StatsView: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("COLLECTION VALUE").font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textT)
             HStack(spacing: 28) {
-                valItem("PAID",  "\(settings.currency)\(Int(paid))",  .white)
+                valItem("PAID",  "\(settings.currency) \(Int(paid))",  .white)
                 Rectangle().fill(Theme.divide).frame(width:1,height:40)
-                valItem("VALUE", "\(settings.currency)\(Int(value))", .white)
+                valItem("VALUE", "\(settings.currency) \(Int(value))", .white)
                 if paid > 0 {
                     let pct = ((value-paid)/paid)*100
                     Rectangle().fill(Theme.divide).frame(width:1,height:40)

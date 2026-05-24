@@ -95,6 +95,7 @@ struct EditFeature {
                 if !r.label.isEmpty   { state.label   = r.label   }
                 if !r.country.isEmpty { state.country = r.country }
                 if !r.format.isEmpty  { state.format  = r.format  }
+                if !r.genre.isEmpty && state.genre.isEmpty { state.genre = r.genre }
                 state.discogsId = r.id > 0 ? r.id : nil
                 state.results = []; state.query = ""
 

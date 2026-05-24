@@ -103,24 +103,28 @@ struct SettingsView: View {
                 }
             }
 
-            RBSection("Vinyl Icon Color") {
+            RBSection("App Icon") {
                 RBRow(divider: false) {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 10) {
                             MiniVinylIcon(color: Color(hex: settings.iconAccentHex), size: 28)
-                            Text("Label colour used on the vinyl icon in the header")
-                                .font(.system(size: 12)).foregroundStyle(Theme.textT)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("App Icon Color")
+                                    .font(.system(size: 14)).foregroundStyle(Theme.textP)
+                                Text("Changes the label colour on your home screen icon")
+                                    .font(.system(size: 12)).foregroundStyle(Theme.textT)
+                            }
                         }
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
-                                ForEach(Settings.accents, id: \.1) { _, hex in
+                                ForEach(Settings.accents, id: \.1) { name, hex in
                                     ZStack {
                                         Circle().fill(Color(hex: hex)).frame(width: 30, height: 30)
                                         if settings.iconAccentHex == hex {
                                             Circle().stroke(Color.white, lineWidth: 2.5).frame(width: 36, height: 36)
                                         }
                                     }
-                                    .onTapGesture { settings.iconAccentHex = hex }
+                                    .onTapGesture { applyAppIcon(name: name, hex: hex) }
                                 }
                             }.padding(.vertical, 4)
                         }
@@ -388,6 +392,14 @@ struct SettingsView: View {
     }
 
     // MARK: – Helpers
+    private func applyAppIcon(name: String, hex: String) {
+        settings.iconAccentHex = hex
+        let iconName: String? = (name == "Amber") ? nil : "VinCo-Icon-\(name)"
+        Task {
+            try? await UIApplication.shared.setAlternateIconName(iconName)
+        }
+    }
+
     private func addGenre() {
         let g = store.newGenre.trimmingCharacters(in: .whitespaces)
         guard !g.isEmpty, !settings.allGenres.contains(g) else { return }

@@ -4,6 +4,7 @@ import ComposableArchitecture
 struct DiscogsResult: Equatable, Identifiable {
     let id: Int; let title: String; let subtitle: String
     let year: String; let label: String; let country: String; let format: String
+    let genre: String
 }
 
 struct DiscogsClient {
@@ -29,9 +30,10 @@ extension DiscogsClient: DependencyKey {
                     let lb = r.label?.first ?? ""
                     let co = r.country ?? ""
                     let fm = r.format?.first ?? ""
+                    let gn = r.genre?.first ?? ""
                     return DiscogsResult(id: r.id, title: r.title,
                         subtitle: [yr,lb,co].filter{!$0.isEmpty}.joined(separator: " · "),
-                        year: yr, label: lb, country: co, format: fm)
+                        year: yr, label: lb, country: co, format: fm, genre: gn)
                 }
             } catch { return [] }
         },
@@ -52,7 +54,7 @@ extension DiscogsClient: DependencyKey {
 }
 
 private nonisolated struct DResp:       Decodable { let results: [DRelease] }
-private nonisolated struct DRelease:    Decodable { let id: Int; let title: String; let year: String?; let label: [String]?; let country: String?; let format: [String]? }
+private nonisolated struct DRelease:    Decodable { let id: Int; let title: String; let year: String?; let label: [String]?; let country: String?; let format: [String]?; let genre: [String]? }
 private nonisolated struct ReleaseResp: Decodable { let lowest_price: Double? }
 
 extension DependencyValues {
