@@ -5,6 +5,7 @@ import Observation
 @Observable final class Settings {
     var schemeKey:    String = UserDefaults.standard.string(forKey: "rb_scheme")   ?? "dark"     { didSet { UserDefaults.standard.set(schemeKey,    forKey: "rb_scheme")   } }
     var accentHex:    String = UserDefaults.standard.string(forKey: "rb_accent")   ?? "#E8A87C"  { didSet { UserDefaults.standard.set(accentHex,    forKey: "rb_accent")   } }
+    var iconAccentHex: String = UserDefaults.standard.string(forKey: "rb_icon_accent") ?? "#E8A87C" { didSet { UserDefaults.standard.set(iconAccentHex, forKey: "rb_icon_accent") } }
     var layout:       String = UserDefaults.standard.string(forKey: "rb_layout")   ?? "grid"     { didSet { UserDefaults.standard.set(layout,       forKey: "rb_layout")   } }
     var showArtwork:  Bool   = UserDefaults.standard.object(forKey: "rb_artwork")  as? Bool ?? true { didSet { UserDefaults.standard.set(showArtwork, forKey: "rb_artwork") } }
     var discogsToken: String = UserDefaults.standard.string(forKey: "rb_discogs")  ?? ""         { didSet { UserDefaults.standard.set(discogsToken, forKey: "rb_discogs")  } }

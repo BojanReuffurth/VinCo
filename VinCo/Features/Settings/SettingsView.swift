@@ -103,6 +103,31 @@ struct SettingsView: View {
                 }
             }
 
+            RBSection("Vinyl Icon Color") {
+                RBRow(divider: false) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            MiniVinylIcon(color: Color(hex: settings.iconAccentHex), size: 28)
+                            Text("Label colour used on the vinyl icon in the header")
+                                .font(.system(size: 12)).foregroundStyle(Theme.textT)
+                        }
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(Settings.accents, id: \.1) { _, hex in
+                                    ZStack {
+                                        Circle().fill(Color(hex: hex)).frame(width: 30, height: 30)
+                                        if settings.iconAccentHex == hex {
+                                            Circle().stroke(Color.white, lineWidth: 2.5).frame(width: 36, height: 36)
+                                        }
+                                    }
+                                    .onTapGesture { settings.iconAccentHex = hex }
+                                }
+                            }.padding(.vertical, 4)
+                        }
+                    }
+                }
+            }
+
             RBSection("Currency") {
                 RBRow(divider: false) {
                     ScrollView(.horizontal, showsIndicators: false) {

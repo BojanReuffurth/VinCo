@@ -187,7 +187,7 @@ struct CollectionView: View {
     private func listRow(_ rec: Record) -> some View {
         HStack(spacing: 12) {
             Group {
-                if let d = rec.coverData, let img = UIImage(data: d) {
+                if settings.showArtwork, let d = rec.coverData, let img = UIImage(data: d) {
                     Image(uiImage: img).resizable().scaledToFill()
                 } else {
                     ZStack { Theme.bg2; VinylView(color: rec.colorHex) }
@@ -333,7 +333,7 @@ struct FlipDetailCard: View {
     private var front: some View {
         ZStack(alignment: .bottomLeading) {
             Group {
-                if let d = record.coverData, let img = UIImage(data: d) {
+                if settings.showArtwork, let d = record.coverData, let img = UIImage(data: d) {
                     Image(uiImage: img).resizable().scaledToFill()
                 } else {
                     ZStack { Theme.bg1; VinylView(color: record.colorHex).padding(40) }

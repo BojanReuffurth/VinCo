@@ -12,7 +12,7 @@ struct AppView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            statsBar
+            appHeader
             Rectangle().fill(Theme.divide).frame(height: 1)
             TabView(selection: $store.tab.sending(\.tabSelected)) {
                 CollectionView(store: store.scope(state: \.collection, action: \.collection))
@@ -24,7 +24,7 @@ struct AppView: View {
             }
         }
         .background(Theme.bg0)
-        .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
+        .safeAreaInset(edge: .bottom, spacing: 0) { bottomCounts }
         .overlay(alignment: .bottomTrailing) {
             fab.padding(.trailing, 20).padding(.bottom, 16)
         }
@@ -44,92 +44,136 @@ struct AppView: View {
         }
     }
 
-    // MARK: – Stats bar (always-on 2×3 grid)
-    private var statsBar: some View {
-        let paid  = collectionRecords.compactMap(\.paidPrice).reduce(0, +)
-        let value = collectionRecords.compactMap(\.currentValue).reduce(0, +)
-        let gain  = paid > 0 ? ((value - paid) / paid) * 100 : 0.0
-        let gainColor: Color = paid > 0 ? (gain >= 0 ? .green : .red) : Theme.textT
-        let paidStr  = paid  > 0 ? "\(settings.currency) \(Int(paid))"  : "\(settings.currency) –"
-        let valStr   = value > 0 ? "\(settings.currency) \(Int(value))" : "\(settings.currency) –"
-        let gainStr  = paid  > 0 ? String(format: "%+.0f %%", gain)     : "– %"
-        return HStack(spacing: 0) {
-            statCell("PAID",  paidStr,  Theme.textS)
-            Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: .infinity)
-            statCell("VALUE", valStr,   Theme.textS)
-            Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: .infinity)
-            statCell("±",     gainStr,  gainColor)
+    // MARK: – App header (vinyl icon + compact stats badge + action buttons)
+    private var appHeader: some View {
+        HStack(spacing: 10) {
+            // Vinyl icon only (no text)
+            ZStack {
+                Circle().fill(settings.accentColor.opacity(0.15)).frame(width: 32, height: 32)
+                MiniVinylIcon(color: Color(hex: settings.iconAccentHex), size: 20)
+            }
+
+            Spacer()
+
+            // Compact 2-row stats badge (labels top / values bottom)
+            if settings.pinnedStats.contains("value") {
+                collectionValueBadge
+            }
+
+            // Spotify
+            Button {
+                if let u = URL(string: "spotify:"), UIApplication.shared.canOpenURL(u) {
+                    UIApplication.shared.open(u)
+                } else if let u = URL(string: "https://open.spotify.com") {
+                    UIApplication.shared.open(u)
+                }
+            } label: {
+                Image(systemName: "music.note")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color(hex: "#1DB954"))
+                    .frame(width: 34, height: 34)
+                    .background(Theme.bg2)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            Button { showStats = true } label: {
+                Image(systemName: "chart.bar.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.textS)
+                    .frame(width: 34, height: 34)
+                    .background(Theme.bg2)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            Button { showSettings = true } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.textS)
+                    .frame(width: 34, height: 34)
+                    .background(Theme.bg2)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
         }
+        .padding(.horizontal, 16).padding(.vertical, 10)
         .background(Theme.bg1)
     }
 
-    private func statCell(_ label: String, _ value: String, _ valueColor: Color) -> some View {
-        VStack(spacing: 3) {
+    // MARK: – Compact stats badge  (2 rows × 3 columns)
+    // Labels row on top, values row on bottom.  Each column is a VStack with
+    // label centred over value; VStack.frame(minWidth:) forces equal widths.
+    private var collectionValueBadge: some View {
+        let paid  = collectionRecords.compactMap(\.paidPrice).reduce(0, +)
+        let value = collectionRecords.compactMap(\.currentValue).reduce(0, +)
+        let gain  = paid > 0 ? ((value - paid) / paid) * 100 : 0.0
+        let gainColor: Color = gain >= 0 ? .green : .red
+        return HStack(spacing: 0) {
+            badgeCol("PAID",  "\(settings.currency) \(Int(paid))",  Theme.textS)
+            Rectangle().fill(Theme.divide).frame(width: 1, height: 26)
+            badgeCol("VAL",   "\(settings.currency) \(Int(value))", Theme.textS)
+            if paid > 0 {
+                Rectangle().fill(Theme.divide).frame(width: 1, height: 26)
+                badgeCol("±", String(format: "%+.0f%%", gain), gainColor)
+            }
+        }
+        .padding(.horizontal, 8).padding(.vertical, 5)
+        .background(Theme.bg2)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func badgeCol(_ label: String, _ value: String, _ color: Color) -> some View {
+        VStack(spacing: 1) {
             Text(label)
-                .font(Theme.courier(9, .semibold))
+                .font(Theme.courier(7, .semibold))
                 .foregroundStyle(Theme.textT)
                 .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .center)
             Text(value)
-                .font(Theme.courier(13, .bold))
-                .foregroundStyle(valueColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .contentShape(Rectangle())
-    }
-
-    // MARK: – Bottom bar (tab counts + action icons)
-    private var bottomBar: some View {
-        HStack(spacing: 0) {
-            // Collection tab
-            tabCount(.collection, count: collectionRecords.count, label: "RECORDS")
-            Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: 32)
-            // Wishlist tab
-            tabCount(.wishlist,   count: wishlistRecords.count,   label: "WISHLIST")
-            Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: 32)
-            // Action icons
-            HStack(spacing: 0) {
-                iconBtn("music.note", color: Color(hex: "#1DB954")) {
-                    if let u = URL(string: "spotify:"), UIApplication.shared.canOpenURL(u) {
-                        UIApplication.shared.open(u)
-                    } else if let u = URL(string: "https://open.spotify.com") {
-                        UIApplication.shared.open(u)
-                    }
-                }
-                iconBtn("chart.bar.fill", color: Theme.textS) { showStats    = true }
-                iconBtn("gearshape.fill", color: Theme.textS) { showSettings = true }
-            }
-            .frame(width: 120)
-        }
-        .padding(.vertical, 10)
-        .background(Theme.bg1.ignoresSafeArea(edges: .bottom))
-    }
-
-    private func tabCount(_ tab: AppFeature.Tab, count: Int, label: String) -> some View {
-        Button { store.send(.tabSelected(tab)) } label: {
-            VStack(spacing: 2) {
-                Text("\(count)")
-                    .font(Theme.courier(22, .bold))
-                    .foregroundStyle(store.tab == tab ? settings.accentColor : Theme.textT)
-                Text(label)
-                    .font(Theme.courier(9, .semibold))
-                    .foregroundStyle(Theme.textT)
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func iconBtn(_ name: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: name)
-                .font(.system(size: 15))
+                .font(Theme.courier(11, .bold))
                 .foregroundStyle(color)
-                .frame(width: 40, height: 40)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
-        .buttonStyle(.plain)
+        .frame(minWidth: 44)
+        .padding(.horizontal, 4)
+    }
+
+    // MARK: – Bottom counts bar
+    private var bottomCounts: some View {
+        HStack(spacing: 0) {
+            Button { store.send(.tabSelected(.collection)) } label: {
+                VStack(spacing: 2) {
+                    Text("\(collectionRecords.count)")
+                        .font(Theme.courier(22, .bold))
+                        .foregroundStyle(store.tab == .collection ? settings.accentColor : Theme.textT)
+                    Text("COLLECTION")
+                        .font(Theme.courier(9, .semibold))
+                        .foregroundStyle(Theme.textT)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.plain)
+
+            Rectangle().fill(Theme.divide).frame(width: 1, height: 32)
+
+            Button { store.send(.tabSelected(.wishlist)) } label: {
+                VStack(spacing: 2) {
+                    Text("\(wishlistRecords.count)")
+                        .font(Theme.courier(22, .bold))
+                        .foregroundStyle(store.tab == .wishlist ? settings.accentColor : Theme.textT)
+                    Text("WISHLIST")
+                        .font(Theme.courier(9, .semibold))
+                        .foregroundStyle(Theme.textT)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 12)
+        .background(Theme.bg1.ignoresSafeArea(edges: .bottom))
     }
 
     // MARK: – Floating action button

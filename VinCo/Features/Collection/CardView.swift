@@ -10,7 +10,7 @@ struct CardView: View {
         ZStack(alignment: .bottomLeading) {
             // Cover art or vinyl placeholder
             Group {
-                if let d = record.coverData, let img = UIImage(data: d) {
+                if settings.showArtwork, let d = record.coverData, let img = UIImage(data: d) {
                     Image(uiImage: img).resizable().scaledToFill()
                 } else {
                     ZStack { Theme.bg1; VinylView(color: record.colorHex).padding(24) }
