@@ -26,6 +26,7 @@ struct CollectionFeature {
         case sortSelected(SortBy)
         case genreSelected(String)
         case recordTapped(Record)
+        case editTapped(Record)
         case addTapped
         case deleteRecord(Record)
         case moveRecord(Record)
@@ -42,6 +43,7 @@ struct CollectionFeature {
             case .sortSelected(let s):  state.sortBy = s;              return .none
             case .genreSelected(let g): state.genre = g;               return .none
             case .addTapped:            state.edit = .init(isWishlist: state.isWishlist); return .none
+            case .editTapped(let r):    state.edit = .init(record: r, isWishlist: r.isWishlist); return .none
             case .addDismissed:         state.showAdd = false;         return .none
             case .recordTapped(let r):  state.detail = .init(record: r); return .none
             // Delete/move handled by view (needs ModelContext)

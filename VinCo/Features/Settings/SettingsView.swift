@@ -18,6 +18,7 @@ struct SettingsView: View {
                     VStack(spacing: 20) {
                         switch store.tab {
                         case .look:    lookTab
+                        case .profile: profileTab
                         case .genres:  genresTab
                         case .backup:  backupTab
                         case .connect: connectTab
@@ -140,6 +141,43 @@ struct SettingsView: View {
                                 }.buttonStyle(.plain)
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: – PROFILE
+    private var profileTab: some View {
+        @Bindable var settings = settings
+        return VStack(spacing: 20) {
+            RBSection("Identity") {
+                RBRow {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("USERNAME")
+                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(Theme.textT)
+                        TextField("Choose a username…", text: $settings.username)
+                            .font(.system(size: 14)).foregroundStyle(Theme.textP)
+                            .tint(settings.accentColor)
+                            .autocorrectionDisabled().textInputAutocapitalization(.never)
+                    }
+                }
+                RBRow(divider: false) {
+                    HStack {
+                        Text("Public Profile").font(.system(size: 14)).foregroundStyle(Theme.textP)
+                        Spacer()
+                        Toggle("", isOn: $settings.isPublic).tint(settings.accentColor)
+                    }
+                }
+            }
+            if !settings.username.isEmpty {
+                RBSection("Profile URL") {
+                    RBRow(divider: false) {
+                        Text("vinco.app/u/\(settings.username)")
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundStyle(settings.accentColor)
+                            .lineLimit(1)
                     }
                 }
             }

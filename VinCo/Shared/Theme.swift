@@ -8,9 +8,11 @@ enum Theme {
     static let divide  = Color.white.opacity(0.07)
     static let textP   = Color.white
     static let textS   = Color.white.opacity(0.55)
-    static let textT   = Color.white.opacity(0.28)
+    static let textT:   Color   = Color.white.opacity(0.30)
     static let cardR:   CGFloat = 14
     static let sectR:   CGFloat = 16
+    static let chipRadius: CGFloat = 20
+    static let tabBarHeight: CGFloat = 56
 
     static func cardGrad()   -> LinearGradient {
         LinearGradient(colors: [.clear, .black.opacity(0.55), .black.opacity(0.82)],

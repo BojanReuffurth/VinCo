@@ -45,7 +45,7 @@ struct DetailView: View {
                     Image(uiImage: img).resizable().scaledToFill()
                         .onTapGesture { store.send(.toggleFullArt) }
                 } else {
-                    ZStack { Theme.bg1; VinylView(color: rec.colorHex, spin: true).padding(60) }
+                    ZStack { Theme.bg1; VinylView(color: rec.colorHex).padding(60) }
                 }
             }
             .frame(maxWidth: .infinity).frame(height: 310).clipped()

@@ -126,8 +126,8 @@ struct EditView: View {
             field("Artist *",          $store.artist)
             field("Album *",           $store.album)
             field("Year",              $store.year,   kb: .numberPad)
-            pickerRow("Genre",     selection: $store.genre,     opts: [""] + settings.allGenres)
-            pickerRow("Condition", selection: $store.condition, opts: Settings.conditions)
+            chipRow("Genre",     selection: $store.genre,     opts: [""] + settings.allGenres)
+            chipRow("Condition", selection: $store.condition, opts: Settings.conditions)
             field("Label",             $store.label)
             field("Format (LP, 7\"…)", $store.format)
             field("Country",           $store.country)
@@ -196,14 +196,28 @@ struct EditView: View {
         }
     }
 
-    private func pickerRow(_ lbl: String, selection: Binding<String>, opts: [String]) -> some View {
+    private func chipRow(_ lbl: String, selection: Binding<String>, opts: [String]) -> some View {
         RBRow {
-            HStack {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(lbl).font(.system(size: 14)).foregroundStyle(Theme.textS)
-                Spacer()
-                Picker("", selection: selection) {
-                    ForEach(opts, id: \.self) { Text($0.isEmpty ? "None" : $0).tag($0) }
-                }.tint(settings.accentColor)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(opts, id: \.self) { opt in
+                            let label = opt.isEmpty ? "None" : opt
+                            let selected = selection.wrappedValue == opt
+                            Button { selection.wrappedValue = opt } label: {
+                                Text(label)
+                                    .font(.system(size: 13, weight: selected ? .semibold : .regular))
+                                    .foregroundStyle(selected ? .black : Theme.textS)
+                                    .padding(.horizontal, 14).padding(.vertical, 7)
+                                    .background(selected ? settings.accentColor : Theme.bg2)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
             }
         }
     }

@@ -10,6 +10,8 @@ import Observation
     var discogsToken: String = UserDefaults.standard.string(forKey: "rb_discogs")  ?? ""         { didSet { UserDefaults.standard.set(discogsToken, forKey: "rb_discogs")  } }
     var spotifyId:    String = UserDefaults.standard.string(forKey: "rb_sp_id")    ?? ""         { didSet { UserDefaults.standard.set(spotifyId,    forKey: "rb_sp_id")    } }
     var currency:     String = UserDefaults.standard.string(forKey: "rb_currency") ?? "€"        { didSet { UserDefaults.standard.set(currency,     forKey: "rb_currency") } }
+    var username:     String = UserDefaults.standard.string(forKey: "rb_username") ?? ""        { didSet { UserDefaults.standard.set(username,     forKey: "rb_username") } }
+    var isPublic:     Bool   = UserDefaults.standard.object(forKey: "rb_public")  as? Bool ?? false { didSet { UserDefaults.standard.set(isPublic,  forKey: "rb_public")   } }
     private var genresJSON:  String = UserDefaults.standard.string(forKey: "rb_genres") ?? "[]"  { didSet { UserDefaults.standard.set(genresJSON,   forKey: "rb_genres")   } }
 
     var customGenres: [String] {

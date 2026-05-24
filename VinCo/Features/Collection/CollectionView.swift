@@ -33,63 +33,71 @@ struct CollectionView: View {
     private let cols = [GridItem(.adaptive(minimum: 155), spacing: 12)]
 
     var body: some View {
-        NavigationStack {
-            ZStack { Theme.bg0.ignoresSafeArea() }
-            VStack(spacing: 0) {
-                filterBar
-                Rectangle().fill(Theme.divide).frame(height: 1)
-                if displayed.isEmpty { emptyState }
-                else {
-                    ScrollView {
-                        LazyVGrid(columns: cols, spacing: 12) {
-                            ForEach(displayed) { rec in
-                                CardView(record: rec)
-                                    .onTapGesture { store.send(.recordTapped(rec)) }
-                                    .contextMenu { ctxMenu(rec) }
-                            }
-                        }
-                        .padding(12)
-                    }
-                    .scrollIndicators(.hidden)
-                }
-            }
-            .background(Theme.bg0)
-            .navigationTitle(store.isWishlist ? "Wishlist" : "Collection")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Theme.bg1, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .searchable(text: $store.search.sending(\.searchChanged), prompt: "Search…")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Text("\(displayed.count)")
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
-                        .foregroundStyle(Theme.textT)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { store.send(.addTapped) } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3).foregroundStyle(settings.accentColor)
-                    }
-                }
-            }
-            .sheet(item: $store.scope(state: \.detail, action: \.detail)) { s in
-                DetailView(store: s)
-            }
-            .sheet(item: $store.scope(state: \.edit, action: \.edit)) { s in
-                EditView(store: s)
-            }
+        VStack(spacing: 0) {
+            header
+            searchBar
+            filterBar
+            Rectangle().fill(Theme.divide).frame(height: 1)
+            if displayed.isEmpty { emptyState }
+            else if settings.layout == "list" { listContent }
+            else { gridContent }
+        }
+        .background(Theme.bg0)
+        .sheet(item: $store.scope(state: \.detail, action: \.detail)) { s in
+            DetailView(store: s)
+        }
+        .sheet(item: $store.scope(state: \.edit, action: \.edit)) { s in
+            EditView(store: s)
         }
     }
 
+    // MARK: – Header
+    private var header: some View {
+        HStack(spacing: 10) {
+            Text(store.isWishlist ? "Wishlist" : "Collection")
+                .font(.system(size: 28, weight: .bold)).foregroundStyle(Theme.textP)
+            Spacer()
+            Text("\(displayed.count)")
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundStyle(Theme.textT)
+            Button { store.send(.addTapped) } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3).foregroundStyle(settings.accentColor)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 8)
+        .background(Theme.bg1)
+    }
+
+    // MARK: – Search bar
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass").foregroundStyle(Theme.textT).font(.system(size: 14))
+            TextField("Search…", text: $store.search.sending(\.searchChanged))
+                .font(.system(size: 14)).foregroundStyle(Theme.textP)
+                .autocorrectionDisabled()
+            if !store.search.isEmpty {
+                Button { store.send(.searchChanged("")) } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(Theme.textT)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .background(Theme.bg2)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .background(Theme.bg1)
+    }
+
+    // MARK: – Filter bar
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 Menu {
                     ForEach(CollectionFeature.SortBy.allCases, id: \.self) { opt in
-                        Button {
-                            store.send(.sortSelected(opt))
-                        } label: {
+                        Button { store.send(.sortSelected(opt)) } label: {
                             if store.sortBy == opt {
                                 Label(opt.rawValue, systemImage: "checkmark")
                             } else {
@@ -124,6 +132,75 @@ struct CollectionView: View {
         .background(Theme.bg1)
     }
 
+    // MARK: – Grid / List
+    private var gridContent: some View {
+        ScrollView {
+            LazyVGrid(columns: cols, spacing: 12) {
+                ForEach(displayed) { rec in
+                    CardView(
+                        record: rec,
+                        onEdit:   { store.send(.editTapped(rec)) },
+                        onMove:   { rec.isWishlist.toggle() },
+                        onDelete: { ctx.delete(rec) }
+                    )
+                    .contextMenu { ctxMenu(rec) }
+                }
+            }
+            .padding(12)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private var listContent: some View {
+        ScrollView {
+            LazyVStack(spacing: 8) {
+                ForEach(displayed) { rec in
+                    listRow(rec)
+                }
+            }
+            .padding(12)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private func listRow(_ rec: Record) -> some View {
+        HStack(spacing: 12) {
+            Group {
+                if let d = rec.coverData, let img = UIImage(data: d) {
+                    Image(uiImage: img).resizable().scaledToFill()
+                } else {
+                    ZStack { Theme.bg2; VinylView(color: rec.colorHex) }
+                }
+            }
+            .frame(width: 54, height: 54)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(rec.artist).font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Theme.textP).lineLimit(1)
+                Text(rec.album).font(.system(size: 12))
+                    .foregroundStyle(Theme.textS).lineLimit(1)
+                if !rec.condition.isEmpty {
+                    Text(rec.condition)
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5).padding(.vertical, 2)
+                        .background(.white.opacity(0.25))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+            }
+            Spacer()
+            Button { store.send(.editTapped(rec)) } label: {
+                Image(systemName: "pencil").foregroundStyle(Theme.textT)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(Theme.bg1)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: – Empty state
     private var emptyState: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -144,7 +221,7 @@ struct CollectionView: View {
 
     @ViewBuilder
     private func ctxMenu(_ rec: Record) -> some View {
-        Button { store.send(.recordTapped(rec)) } label: { Label("Open", systemImage: "eye") }
+        Button { store.send(.editTapped(rec)) } label: { Label("Edit", systemImage: "pencil") }
         Button { rec.isWishlist.toggle() } label: {
             Label(rec.isWishlist ? "Move to Collection" : "Move to Wishlist",
                   systemImage: rec.isWishlist ? "square.stack.3d.up" : "heart")

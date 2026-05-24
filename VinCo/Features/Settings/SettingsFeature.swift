@@ -5,7 +5,7 @@ import SwiftData
 @Reducer
 struct SettingsFeature {
     enum Tab: String, CaseIterable, Equatable {
-        case look = "Look", genres = "Genres", backup = "Backup"
+        case look = "Look", profile = "Profile", genres = "Genres", backup = "Backup"
         case connect = "Connect", tools = "Tools"
     }
 
