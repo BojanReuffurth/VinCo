@@ -16,3 +16,4 @@
 2. Plan ahead.
 3. Ask / suggest alternatives before executing.
 4. Ensure no existing functionality is compromised.
+5. Implement changes fully, comprehensibly, and consistently across the entire codebase/app — no partial roll-outs, no inconsistent behaviour between screens or flows.
