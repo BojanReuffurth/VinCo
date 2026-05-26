@@ -26,7 +26,6 @@ struct SettingsView: View {
                     VStack(spacing: 20) {
                         switch store.tab {
                         case .look:    lookTab
-                        case .profile: profileTab
                         case .genres:  genresTab
                         case .backup:  backupTab
                         case .connect: connectTab
@@ -87,73 +86,27 @@ struct SettingsView: View {
         @Bindable var settings = settings
         return VStack(spacing: 20) {
 
-            // Color Scheme
-            RBSection("Color Scheme") {
-                RBRow(divider: false) {
-                    HStack(spacing: 10) {
-                        ForEach([("System","system"),("Light","light"),("Dark","dark")], id: \.1) { lbl, key in
-                            Button { settings.schemeKey = key } label: {
-                                Text(lbl)
-                                    .font(Theme.courier(13, settings.schemeKey == key ? .semibold : .regular))
-                                    .foregroundStyle(settings.schemeKey == key ? .black : Theme.textS)
-                                    .padding(.horizontal, 16).padding(.vertical, 8)
-                                    .background(settings.schemeKey == key ? settings.accentColor : settings.bg2)
-                                    .clipShape(Capsule())
-                            }.buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-
-            // Palette (background style)
+            // Background Style — dark & light rows
             RBSection("Background Style") {
                 RBRow(divider: false) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                ForEach(ThemePalette.presets, id: \.name) { palette in
-                                    let selected = settings.paletteKey == palette.name
-                                    Button { settings.paletteKey = palette.name } label: {
-                                        VStack(spacing: 6) {
-                                            // 4-color swatch
-                                            ZStack {
-                                                RoundedRectangle(cornerRadius: 10)
-                                                    .fill(palette.bg0Dark)
-                                                    .frame(width: 54, height: 54)
-                                                VStack(spacing: 2) {
-                                                    HStack(spacing: 2) {
-                                                        RoundedRectangle(cornerRadius: 3)
-                                                            .fill(palette.bg1Dark)
-                                                            .frame(width: 22, height: 22)
-                                                        RoundedRectangle(cornerRadius: 3)
-                                                            .fill(palette.bg2Dark)
-                                                            .frame(width: 22, height: 22)
-                                                    }
-                                                    HStack(spacing: 2) {
-                                                        RoundedRectangle(cornerRadius: 3)
-                                                            .fill(palette.bg2Dark)
-                                                            .frame(width: 22, height: 22)
-                                                        RoundedRectangle(cornerRadius: 3)
-                                                            .fill(palette.bg3Dark)
-                                                            .frame(width: 22, height: 22)
-                                                    }
-                                                }
-                                            }
-                                            .overlay {
-                                                if selected {
-                                                    RoundedRectangle(cornerRadius: 10)
-                                                        .stroke(settings.accentColor, lineWidth: 2)
-                                                }
-                                            }
-                                            Text(palette.name)
-                                                .font(Theme.courier(10, selected ? .semibold : .regular))
-                                                .foregroundStyle(selected ? settings.accentColor : Theme.textT)
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                }
+                    VStack(alignment: .leading, spacing: 14) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("DARK")
+                                .font(Theme.courier(10, .semibold)).foregroundStyle(Theme.textT)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(ThemePalette.dark, id: \.name) { paletteSwatch($0) }
+                                }.padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("LIGHT")
+                                .font(Theme.courier(10, .semibold)).foregroundStyle(Theme.textT)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(ThemePalette.light, id: \.name) { paletteSwatch($0) }
+                                }.padding(.vertical, 4)
+                            }
                         }
                     }
                 }
@@ -274,43 +227,64 @@ struct SettingsView: View {
                     }
                 }
             }
-        }
-    }
 
-    // MARK: – PROFILE
-    private var profileTab: some View {
-        @Bindable var settings = settings
-        return VStack(spacing: 20) {
-            RBSection("Identity") {
+            // Show / Hide
+            RBSection("Show / Hide") {
                 RBRow {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("USERNAME")
-                            .font(Theme.courier(11, .semibold)).foregroundStyle(Theme.textT)
-                        TextField("Choose a username…", text: $settings.username)
-                            .font(Theme.courier(14)).foregroundStyle(Theme.textP)
-                            .tint(settings.accentColor)
-                            .autocorrectionDisabled().textInputAutocapitalization(.never)
+                    HStack {
+                        Text("Value Bar").font(Theme.courier(14)).foregroundStyle(Theme.textP)
+                        Spacer()
+                        Toggle("", isOn: $settings.showValueBar).tint(settings.accentColor)
+                    }
+                }
+                RBRow {
+                    HStack {
+                        Text("Suggestions Button").font(Theme.courier(14)).foregroundStyle(Theme.textP)
+                        Spacer()
+                        Toggle("", isOn: $settings.showSuggestions).tint(settings.accentColor)
                     }
                 }
                 RBRow(divider: false) {
                     HStack {
-                        Text("Public Profile").font(Theme.courier(14)).foregroundStyle(Theme.textP)
+                        Text("Stats Button").font(Theme.courier(14)).foregroundStyle(Theme.textP)
                         Spacer()
-                        Toggle("", isOn: $settings.isPublic).tint(settings.accentColor)
-                    }
-                }
-            }
-            if !settings.username.isEmpty {
-                RBSection("Profile URL") {
-                    RBRow(divider: false) {
-                        Text("vinco.app/u/\(settings.username)")
-                            .font(Theme.courier(13))
-                            .foregroundStyle(settings.accentColor)
-                            .lineLimit(1)
+                        Toggle("", isOn: $settings.showStatsBtn).tint(settings.accentColor)
                     }
                 }
             }
         }
+    }
+
+    private func paletteSwatch(_ palette: ThemePalette) -> some View {
+        let selected = settings.paletteKey == palette.name
+        return Button { settings.paletteKey = palette.name } label: {
+            VStack(spacing: 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(palette.bg0)
+                        .frame(width: 54, height: 54)
+                    VStack(spacing: 2) {
+                        HStack(spacing: 2) {
+                            RoundedRectangle(cornerRadius: 3).fill(palette.bg1).frame(width: 22, height: 22)
+                            RoundedRectangle(cornerRadius: 3).fill(palette.bg2).frame(width: 22, height: 22)
+                        }
+                        HStack(spacing: 2) {
+                            RoundedRectangle(cornerRadius: 3).fill(palette.bg2).frame(width: 22, height: 22)
+                            RoundedRectangle(cornerRadius: 3).fill(palette.bg3).frame(width: 22, height: 22)
+                        }
+                    }
+                }
+                .overlay {
+                    if selected {
+                        RoundedRectangle(cornerRadius: 10).stroke(settings.accentColor, lineWidth: 2)
+                    }
+                }
+                Text(palette.name)
+                    .font(Theme.courier(10, selected ? .semibold : .regular))
+                    .foregroundStyle(selected ? settings.accentColor : Theme.textT)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: – GENRES
@@ -476,6 +450,8 @@ struct SettingsView: View {
     private var connectTab: some View {
         @Bindable var settings = settings
         return VStack(spacing: 20) {
+
+            // Discogs
             RBSection("Discogs") {
                 RBRow {
                     VStack(alignment: .leading, spacing: 6) {
@@ -492,19 +468,32 @@ struct SettingsView: View {
                         .font(Theme.courier(12)).foregroundStyle(Theme.textT)
                 }
             }
+
+            // Spotify
             RBSection("Spotify") {
                 RBRow {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("CLIENT ID")
-                            .font(Theme.courier(11, .semibold)).foregroundStyle(Theme.textT)
-                        SecureField("Paste Client ID here…", text: $settings.spotifyId)
-                            .font(Theme.courier(14)).foregroundStyle(Theme.textP)
-                            .tint(settings.accentColor)
-                            .autocorrectionDisabled().textInputAutocapitalization(.never)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Connection status").font(Theme.courier(14)).foregroundStyle(Theme.textP)
+                            Text(settings.isSpotifyConnected ? "Connected ✓" : "Not connected")
+                                .font(Theme.courier(12))
+                                .foregroundStyle(settings.isSpotifyConnected ? .green : Theme.textT)
+                        }
+                        Spacer()
+                        if settings.isSpotifyConnected {
+                            Button("Disconnect") {
+                                UserDefaults.standard.removeObject(forKey: "rb_sp_token")
+                                UserDefaults.standard.removeObject(forKey: "rb_sp_expiry")
+                                UserDefaults.standard.removeObject(forKey: "rb_sp_refresh")
+                            }
+                            .font(Theme.courier(12))
+                            .foregroundStyle(.red)
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
                 RBRow(divider: false) {
-                    Text("Create a free app at developer.spotify.com, add your redirect URI, then paste the Client ID above.")
+                    Text("Tap the ✦ wand button on the home screen, then choose Spotify to sign in with your account.")
                         .font(Theme.courier(12)).foregroundStyle(Theme.textT)
                 }
             }

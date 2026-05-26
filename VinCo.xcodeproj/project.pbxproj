@@ -35,6 +35,7 @@
 		EFF0743D2FC329A8001D748E /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF074192FC329A8001D748E /* StatsView.swift */; };
 		EFF0743E2FC329A8001D748E /* CollectionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF0740C2FC329A8001D748E /* CollectionFeature.swift */; };
 		EFF0743F2FC329A8001D748E /* EditFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF074122FC329A8001D748E /* EditFeature.swift */; };
+		EFF074A12FC329A8001D748E /* ScanViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF074A02FC329A8001D748E /* ScanViews.swift */; };
 		EFF074402FC329A8001D748E /* ColorExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF074412FC329A8001D748E /* ColorExtractor.swift */; };
 		B4DC4092BE574F8F8EE9C306 /* BackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39417F2E195E44B4BA2F2E6E /* BackupManager.swift */; };
 		961CF23DA37A428691273779 /* CurrencyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 197952D01F9D48EA983E689E /* CurrencyService.swift */; };
@@ -83,6 +84,12 @@
 		EFF074992FC329A8001D748E /* VinCo-Icon-Gold@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF074982FC329A8001D748E /* VinCo-Icon-Gold@3x.png */; };
 		EFF0749B2FC329A8001D748E /* VinCo-Icon-Silver@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0749A2FC329A8001D748E /* VinCo-Icon-Silver@2x.png */; };
 		EFF0749D2FC329A8001D748E /* VinCo-Icon-Silver@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF0749C2FC329A8001D748E /* VinCo-Icon-Silver@3x.png */; };
+		AA000002AA000002AA000002 /* SuggestionsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AA000001AA000001 /* SuggestionsClient.swift */; };
+		AA000004AA000004AA000004 /* SuggestionsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003AA000003AA000003 /* SuggestionsFeature.swift */; };
+		AA000006AA000006AA000006 /* SuggestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000005AA000005AA000005 /* SuggestionsView.swift */; };
+		BB000002BB000002BB000002 /* FindOnlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000001BB000001BB000001 /* FindOnlineView.swift */; };
+		BB000004BB000004BB000004 /* StoreLocatorFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000003BB000003BB000003 /* StoreLocatorFeature.swift */; };
+		BB000006BB000006BB000006 /* StoreLocatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000005BB000005BB000005 /* StoreLocatorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +111,7 @@
 		EFF074102FC329A8001D748E /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		EFF074122FC329A8001D748E /* EditFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFeature.swift; sourceTree = "<group>"; };
 		EFF074132FC329A8001D748E /* EditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
+		EFF074A02FC329A8001D748E /* ScanViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViews.swift; sourceTree = "<group>"; };
 		EFF074152FC329A8001D748E /* SettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFeature.swift; sourceTree = "<group>"; };
 		EFF074162FC329A8001D748E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		EFF074182FC329A8001D748E /* StatsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsFeature.swift; sourceTree = "<group>"; };
@@ -163,6 +171,12 @@
 		EFF074982FC329A8001D748E /* VinCo-Icon-Gold@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Gold@3x.png"; sourceTree = "<group>"; };
 		EFF0749A2FC329A8001D748E /* VinCo-Icon-Silver@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Silver@2x.png"; sourceTree = "<group>"; };
 		EFF0749C2FC329A8001D748E /* VinCo-Icon-Silver@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VinCo-Icon-Silver@3x.png"; sourceTree = "<group>"; };
+		AA000001AA000001AA000001 /* SuggestionsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsClient.swift; sourceTree = "<group>"; };
+		AA000003AA000003AA000003 /* SuggestionsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsFeature.swift; sourceTree = "<group>"; };
+		AA000005AA000005AA000005 /* SuggestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsView.swift; sourceTree = "<group>"; };
+		BB000001BB000001BB000001 /* FindOnlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindOnlineView.swift; sourceTree = "<group>"; };
+		BB000003BB000003BB000003 /* StoreLocatorFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreLocatorFeature.swift; sourceTree = "<group>"; };
+		BB000005BB000005BB000005 /* StoreLocatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreLocatorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -278,6 +292,7 @@
 				EFF074052FC329A8001D748E /* MusicBrainzClient.swift */,
 				39417F2E195E44B4BA2F2E6E /* BackupManager.swift */,
 				197952D01F9D48EA983E689E /* CurrencyService.swift */,
+				AA000001AA000001AA000001 /* SuggestionsClient.swift */,
 			);
 			path = Clients;
 			sourceTree = "<group>";
@@ -322,6 +337,7 @@
 			children = (
 				EFF074122FC329A8001D748E /* EditFeature.swift */,
 				EFF074132FC329A8001D748E /* EditView.swift */,
+				EFF074A02FC329A8001D748E /* ScanViews.swift */,
 			);
 			path = Edit;
 			sourceTree = "<group>";
@@ -352,10 +368,30 @@
 				EFF0740E2FC329A8001D748E /* Collection */,
 				EFF074112FC329A8001D748E /* Detail */,
 				EFF074142FC329A8001D748E /* Edit */,
+				BB000007BB000007BB000007 /* FindOnline */,
 				EFF074172FC329A8001D748E /* Settings */,
 				EFF0741A2FC329A8001D748E /* Stats */,
+				BB000008BB000008BB000008 /* StoreLocator */,
+				AA000007AA000007AA000007 /* Suggestions */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		BB000007BB000007BB000007 /* FindOnline */ = {
+			isa = PBXGroup;
+			children = (
+				BB000001BB000001BB000001 /* FindOnlineView.swift */,
+			);
+			path = FindOnline;
+			sourceTree = "<group>";
+		};
+		BB000008BB000008BB000008 /* StoreLocator */ = {
+			isa = PBXGroup;
+			children = (
+				BB000003BB000003BB000003 /* StoreLocatorFeature.swift */,
+				BB000005BB000005BB000005 /* StoreLocatorView.swift */,
+			);
+			path = StoreLocator;
 			sourceTree = "<group>";
 		};
 		EFF0741E2FC329A8001D748E /* Models */ = {
@@ -378,6 +414,15 @@
 				EFF074232FC329A8001D748E /* VinylView.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		AA000007AA000007AA000007 /* Suggestions */ = {
+			isa = PBXGroup;
+			children = (
+				AA000003AA000003AA000003 /* SuggestionsFeature.swift */,
+				AA000005AA000005AA000005 /* SuggestionsView.swift */,
+			);
+			path = Suggestions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -527,9 +572,16 @@
 				EFF0743D2FC329A8001D748E /* StatsView.swift in Sources */,
 				EFF0743E2FC329A8001D748E /* CollectionFeature.swift in Sources */,
 				EFF0743F2FC329A8001D748E /* EditFeature.swift in Sources */,
+					EFF074A12FC329A8001D748E /* ScanViews.swift in Sources */,
 				EFF074402FC329A8001D748E /* ColorExtractor.swift in Sources */,
 				B4DC4092BE574F8F8EE9C306 /* BackupManager.swift in Sources */,
 				961CF23DA37A428691273779 /* CurrencyService.swift in Sources */,
+				AA000002AA000002AA000002 /* SuggestionsClient.swift in Sources */,
+				AA000004AA000004AA000004 /* SuggestionsFeature.swift in Sources */,
+				AA000006AA000006AA000006 /* SuggestionsView.swift in Sources */,
+				BB000002BB000002BB000002 /* FindOnlineView.swift in Sources */,
+				BB000004BB000004BB000004 /* StoreLocatorFeature.swift in Sources */,
+				BB000006BB000006BB000006 /* StoreLocatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

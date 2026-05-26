@@ -83,6 +83,56 @@ struct RBRow<C: View>: View {
     }
 }
 
+// MARK: – Condition grading guide sheet
+struct ConditionGuideView: View {
+    @Environment(\.dismiss)  private var dismiss
+    @Environment(Settings.self) private var settings
+
+    private let grades: [(String, String, String)] = [
+        ("M",   "Mint",           "Perfect, unplayed, completely flawless."),
+        ("NM",  "Near Mint",      "Nearly perfect; may have been played once."),
+        ("VG+", "Very Good Plus", "Shows light signs of play; minor surface marks."),
+        ("VG",  "Very Good",      "Visible marks, plays with some surface noise."),
+        ("G+",  "Good Plus",      "Heavily played; noisy throughout."),
+        ("G",   "Good",           "Very noisy but plays through without skipping."),
+        ("F",   "Fair",           "Very noisy or skips; barely playable."),
+        ("P",   "Poor",           "Barely playable or completely unplayable."),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(grades, id: \.0) { grade, label, desc in
+                        VStack(spacing: 0) {
+                            HStack(spacing: 14) {
+                                Text(grade)
+                                    .font(Theme.courier(17, .bold))
+                                    .foregroundStyle(settings.accentColor)
+                                    .frame(width: 38, alignment: .leading)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(label).font(Theme.courier(14, .semibold)).foregroundStyle(Theme.textP)
+                                    Text(desc).font(Theme.courier(12)).foregroundStyle(Theme.textS)
+                                }
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16).padding(.vertical, 12)
+                            Rectangle().fill(Theme.divide).frame(height: 1)
+                        }
+                    }
+                }
+                .padding(.top, 8)
+            }
+            .background(settings.bg0.ignoresSafeArea())
+            .navigationTitle("Condition Guide")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(settings.bg1, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { CloseButton() } }
+        }
+    }
+}
+
 // MARK: – Mini vinyl record icon
 struct MiniVinylIcon: View {
     var color: Color  = Color(hex: "#E8A87C")

@@ -8,6 +8,8 @@ struct DetailView: View {
     @Environment(\.modelContext) private var ctx
     @Environment(Settings.self)  private var settings
     @StateObject private var audio = AudioPlayer()
+    @State private var showFindOnline     = false
+    @State private var showConditionGuide = false
 
     var rec: Record { store.record }
 
@@ -36,6 +38,15 @@ struct DetailView: View {
             .fullScreenCover(isPresented: $store.showFullArt) { fullArt }
             .confirmationDialog("Delete \"\(rec.album)\"?", isPresented: $store.showDeleteAlert, titleVisibility: .visible) {
                 Button("Delete", role: .destructive) { ctx.delete(rec); dismiss() }
+            }
+            .sheet(isPresented: $showFindOnline) {
+                FindOnlineView(record: rec)
+                    .environment(settings)
+            }
+            .sheet(isPresented: $showConditionGuide) {
+                ConditionGuideView()
+                    .environment(settings)
+                    .presentationDetents([.medium, .large])
             }
         }
         .onDisappear { audio.stop() }
@@ -74,6 +85,15 @@ struct DetailView: View {
             HStack(spacing: 8) {
                 chip(rec.year,      "calendar",                !rec.year.isEmpty)
                 chip(rec.condition, "checkmark.seal.fill",     !rec.condition.isEmpty, accent: true)
+                if !rec.condition.isEmpty {
+                    Button { showConditionGuide = true } label: {
+                        Image(systemName: "info.circle")
+                            .font(Theme.courier(12, .medium))
+                            .foregroundStyle(Theme.textT)
+                            .padding(.horizontal, 6).padding(.vertical, 6)
+                            .background(settings.bg2).clipShape(Capsule())
+                    }.buttonStyle(.plain)
+                }
                 chip(rec.genre,     "music.note",              !rec.genre.isEmpty)
                 chip(rec.rpm.isEmpty ? "" : "\(rec.rpm) RPM", "dial.low", !rec.rpm.isEmpty)
                 chip(rec.label,     "building.2",              !rec.label.isEmpty)
@@ -173,6 +193,11 @@ struct DetailView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button { store.send(.editTapped)  } label: { Label("Edit", systemImage: "pencil") }
+                if rec.isWishlist {
+                    Button { showFindOnline = true } label: {
+                        Label("Find Online", systemImage: "cart.fill")
+                    }
+                }
                 Button { store.send(.moveTapped)  } label: {
                     Label(rec.isWishlist ? "Move to Collection" : "Move to Wishlist",
                           systemImage: rec.isWishlist ? "square.stack.3d.up" : "heart")

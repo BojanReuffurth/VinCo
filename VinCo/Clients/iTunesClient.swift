@@ -8,28 +8,50 @@ nonisolated struct iTunesFetch: Equatable {
 }
 
 struct iTunesClient {
-    var fetch: @Sendable (String, String) async -> iTunesFetch
+    var fetch:          @Sendable (String, String) async -> iTunesFetch
+    /// Returns up to 6 unique 600×600 cover art URLs for the given artist + album query.
+    var fetchCoverURLs: @Sendable (String, String) async -> [String]
 }
 
 extension iTunesClient: DependencyKey {
-    static let liveValue = iTunesClient { artist, album in
-        var out = iTunesFetch()
-        let q = "\(artist) \(album)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        guard let url = URL(string: "https://itunes.apple.com/search?term=\(q)&entity=album&media=music&limit=10&country=us")
-        else { return out }
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let resp = try JSONDecoder().decode(SearchResp.self, from: data)
-            guard let best = await bestMatch(resp.results, ar: artist.lowercased(), al: album.lowercased())
+    static let liveValue = iTunesClient(
+        fetch: { artist, album in
+            var out = iTunesFetch()
+            let q = "\(artist) \(album)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            guard let url = URL(string: "https://itunes.apple.com/search?term=\(q)&entity=album&media=music&limit=10&country=us")
             else { return out }
-            out.itunesId = best.collectionId
-            if let art = best.artworkUrl100 {
-                out.coverURL = art.replacingOccurrences(of: "100x100bb", with: "600x600bb")
-            }
-            if let id = best.collectionId { out.tracks = await fetchTracks(id) }
-        } catch {}
-        return out
-    }
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                let resp = try JSONDecoder().decode(SearchResp.self, from: data)
+                guard let best = bestMatch(resp.results, ar: artist.lowercased(), al: album.lowercased())
+                else { return out }
+                out.itunesId = best.collectionId
+                if let art = best.artworkUrl100 {
+                    out.coverURL = art.replacingOccurrences(of: "100x100bb", with: "600x600bb")
+                }
+                if let id = best.collectionId { out.tracks = await fetchTracks(id) }
+            } catch {}
+            return out
+        },
+        fetchCoverURLs: { artist, album in
+            let q = "\(artist) \(album)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            guard let url = URL(string: "https://itunes.apple.com/search?term=\(q)&entity=album&media=music&limit=12&country=us")
+            else { return [] }
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                let resp = try JSONDecoder().decode(SearchResp.self, from: data)
+                var urls: [String] = []
+                var seen = Set<String>()
+                for r in resp.results {
+                    if let art = r.artworkUrl100 {
+                        let big = art.replacingOccurrences(of: "100x100bb", with: "600x600bb")
+                        if seen.insert(big).inserted { urls.append(big) }
+                    }
+                }
+                return Array(urls.prefix(6))
+            } catch { return [] }
+        }
+    )
 }
 
 private func bestMatch(_ r: [Album], ar: String, al: String) -> Album? {
@@ -57,10 +79,10 @@ private func fetchTracks(_ id: Int) async -> [Track] {
     } catch { return [] }
 }
 
-private nonisolated struct SearchResp:  Decodable { let results: [Album] }
-private nonisolated struct Album:       Decodable { let collectionId: Int?; let collectionName: String?; let artistName: String?; let artworkUrl100: String? }
-private nonisolated struct LookupResp:  Decodable { let results: [Item] }
-private nonisolated struct Item:        Decodable { let wrapperType: String?; let trackName: String?; let trackNumber: Int?; let discNumber: Int?; let trackTimeMillis: Double?; let previewUrl: String? }
+private nonisolated struct SearchResp: Decodable { let results: [Album] }
+private nonisolated struct Album:      Decodable { let collectionId: Int?; let collectionName: String?; let artistName: String?; let artworkUrl100: String? }
+private nonisolated struct LookupResp: Decodable { let results: [Item] }
+private nonisolated struct Item:       Decodable { let wrapperType: String?; let trackName: String?; let trackNumber: Int?; let discNumber: Int?; let trackTimeMillis: Double?; let previewUrl: String? }
 
 extension DependencyValues {
     var iTunes: iTunesClient {

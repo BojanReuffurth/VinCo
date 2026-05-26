@@ -138,6 +138,14 @@
 		</dict>
 	</dict>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>VinCo reads your music library to suggest vinyl records you might like based on your listening history.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>VinCo uses the camera to scan vinyl record barcodes and photograph album covers for automatic record identification.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>VinCo reads photos from your library so you can import album cover screenshots for automatic record identification.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>VinCo uses your location to find vinyl record stores near you.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -1,17 +1,27 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
+import VisionKit
 import ComposableArchitecture
 
 struct EditView: View {
     @Bindable var store: StoreOf<EditFeature>
     @Environment(\.dismiss)      private var dismiss
     @Environment(\.modelContext) private var ctx
+    @State private var showConditionGuide = false
     @Environment(Settings.self)  private var settings
+
+    // Scan sheet presentation state (local UI, not in TCA store)
+    @State private var showBarcodeScanner = false
+    @State private var showCameraCapture  = false
+    @State private var showPhotoPicker    = false
+    @State private var photoItem: PhotosPickerItem? = nil
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+                    if !store.isEditing { scanBlock }
                     coverBlock
                     discogsBlock
                     detailsBlock
@@ -42,12 +52,143 @@ struct EditView: View {
             }
             .onAppear { store.send(.appeared) }
         }
+        // Condition grading guide
+        .sheet(isPresented: $showConditionGuide) {
+            ConditionGuideView()
+                .environment(settings)
+                .presentationDetents([.medium, .large])
+        }
+        // Barcode scanner — full-screen sheet with live DataScanner
+        .sheet(isPresented: $showBarcodeScanner) {
+            BarcodeScannerSheet(
+                onDetected: { barcode in
+                    showBarcodeScanner = false
+                    store.send(.barcodeDetected(barcode))
+                },
+                onCancel: { showBarcodeScanner = false }
+            )
+            .environment(settings)
+            .ignoresSafeArea()
+        }
+        // Camera capture — for album cover text recognition
+        .fullScreenCover(isPresented: $showCameraCapture) {
+            CoverCameraView(
+                onCapture: { data in
+                    showCameraCapture = false
+                    store.send(.imageAcquired(data))
+                },
+                onCancel: { showCameraCapture = false }
+            )
+            .ignoresSafeArea()
+        }
+        // Photo library picker — for screenshot / saved image import
+        .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem, matching: .images)
+        .onChange(of: photoItem) { _, item in
+            guard let item else { return }
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self) {
+                    store.send(.imageAcquired(data))
+                }
+                photoItem = nil
+            }
+        }
+    }
+
+    // MARK: – Scan block (new records only)
+    private var scanBlock: some View {
+        RBSection("Quick Fill") {
+            RBRow(divider: false) {
+                VStack(alignment: .leading, spacing: 14) {
+                    // Three scan mode buttons
+                    HStack(spacing: 10) {
+                        scanModeButton(
+                            icon: "barcode.viewfinder",
+                            label: "Barcode",
+                            active: store.scannedBarcode != nil && store.searching
+                        ) { showBarcodeScanner = true }
+
+                        scanModeButton(
+                            icon: "camera.viewfinder",
+                            label: "Scan Cover",
+                            active: false
+                        ) { showCameraCapture = true }
+
+                        scanModeButton(
+                            icon: "photo.badge.magnifyingglass",
+                            label: "Import Photo",
+                            active: false
+                        ) { showPhotoPicker = true }
+                    }
+
+                    // Status row: analysing / searching / scanned-barcode badge
+                    if store.recognizing {
+                        HStack(spacing: 8) {
+                            ProgressView().scaleEffect(0.75).tint(settings.accentColor)
+                            Text("Analysing image…")
+                                .font(Theme.courier(12)).foregroundStyle(Theme.textS)
+                        }
+                    } else if store.searching {
+                        HStack(spacing: 8) {
+                            ProgressView().scaleEffect(0.75).tint(settings.accentColor)
+                            Text(store.scannedBarcode != nil ? "Looking up barcode…" : "Searching Discogs…")
+                                .font(Theme.courier(12)).foregroundStyle(Theme.textS)
+                        }
+                    } else if let barcode = store.scannedBarcode {
+                        HStack(spacing: 6) {
+                            Image(systemName: "barcode")
+                                .font(.system(size: 11)).foregroundStyle(Theme.textT)
+                            Text(barcode)
+                                .font(Theme.courier(11)).foregroundStyle(Theme.textT)
+                                .lineLimit(1)
+                            Spacer()
+                            // Allow re-scanning
+                            Button {
+                                store.scannedBarcode = nil
+                                showBarcodeScanner = true
+                            } label: {
+                                Text("Re-scan")
+                                    .font(Theme.courier(11)).foregroundStyle(settings.accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+        }
+    }
+
+    private func scanModeButton(icon: String, label: String, active: Bool,
+                                action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 7) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(active
+                              ? settings.accentColor
+                              : settings.accentColor.opacity(0.12))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: icon)
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundStyle(active ? .black : settings.accentColor)
+                }
+                Text(label)
+                    .font(Theme.courier(10, .semibold))
+                    .foregroundStyle(Theme.textS)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: – Cover block
     private var coverBlock: some View {
         RBSection {
             VStack(spacing: 14) {
+                // Selected cover or vinyl placeholder
                 ZStack {
                     if let d = store.coverData, let img = UIImage(data: d) {
                         Image(uiImage: img).resizable().scaledToFill()
@@ -58,6 +199,8 @@ struct EditView: View {
                     }
                 }
                 .padding(.top, 16)
+
+                // Find Art / Clear buttons
                 HStack(spacing: 12) {
                     Button { store.send(.fetchArtTapped) } label: {
                         HStack(spacing: 6) {
@@ -72,14 +215,53 @@ struct EditView: View {
                     .buttonStyle(.plain)
                     .disabled((store.artist.isEmpty && store.album.isEmpty) || store.fetchingArt)
                     if store.coverData != nil {
+                        // Clears cover; suggestions remain so user can pick another
                         Button { store.coverData = nil } label: {
                             Image(systemName: "xmark.circle.fill").font(.system(size: 22)).foregroundStyle(Theme.textT)
                         }.buttonStyle(.plain)
                     }
                 }
-                .padding(.bottom, 16)
+
+                // Cover suggestions strip — shown when multiple options found
+                if store.coverSuggestions.count > 1 {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("CHOOSE COVER")
+                            .font(Theme.courier(10, .semibold)).foregroundStyle(Theme.textT)
+                            .padding(.horizontal, 16)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(store.coverSuggestions, id: \.self) { urlStr in
+                                    let isSelected = store.coverData != nil &&
+                                        store.coverSuggestions.firstIndex(of: urlStr) ==
+                                        store.coverSuggestions.firstIndex(where: { _ in true })
+                                    Button {
+                                        store.send(.coverSuggestionPicked(urlStr))
+                                    } label: {
+                                        if let url = URL(string: urlStr) {
+                                            AsyncImage(url: url) { img in
+                                                img.resizable().scaledToFill()
+                                            } placeholder: {
+                                                settings.bg2
+                                            }
+                                            .frame(width: 72, height: 72)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .stroke(settings.accentColor, lineWidth: 2)
+                                                    .opacity(isSelected ? 1 : 0)
+                                            )
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 16).padding(.vertical, 4)
+                        }
+                    }
+                }
             }
             .frame(maxWidth: .infinity)
+            .padding(.bottom, 16)
         }
     }
 
@@ -148,7 +330,7 @@ struct EditView: View {
             field("Year",              $store.year,   kb: .numberPad)
             chipRow("Genre",     selection: $store.genre,     opts: [""] + settings.allGenres)
             chipRow("RPM",       selection: $store.rpm,       opts: [""] + Settings.rpms)
-            chipRow("Condition", selection: $store.condition, opts: Settings.conditions)
+            conditionRow
             field("Label",             $store.label)
             field("Format (LP, 7\"…)", $store.format)
             field("Country",           $store.country)
@@ -284,6 +466,40 @@ struct EditView: View {
         }
     }
 
+    // MARK: – Condition row (chip picker + ⓘ guide button)
+    private var conditionRow: some View {
+        RBRow {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Text("Condition").font(Theme.courier(14)).foregroundStyle(Theme.textS)
+                    Button { showConditionGuide = true } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.textT)
+                    }
+                    .buttonStyle(.plain)
+                }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Settings.conditions, id: \.self) { opt in
+                            let selected = store.condition == opt
+                            Button { store.condition = opt } label: {
+                                Text(opt)
+                                    .font(Theme.courier(13, selected ? .semibold : .regular))
+                                    .foregroundStyle(selected ? .black : Theme.textS)
+                                    .padding(.horizontal, 14).padding(.vertical, 7)
+                                    .background(selected ? settings.accentColor : settings.bg2)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+    }
+
     // MARK: – Helpers
     private func field(_ ph: String, _ binding: Binding<String>, kb: UIKeyboardType = .default) -> some View {
         RBRow {
@@ -332,7 +548,7 @@ struct EditView: View {
         r.year   = store.year;    r.genre     = store.genre;  r.rpm    = store.rpm
         r.label  = store.label;   r.format    = store.format; r.country = store.country
         r.notes  = store.notes;   r.condition = store.condition; r.colorHex = store.colorHex
-        if let d = store.coverData { r.coverData = d }
+        r.coverData = store.coverData   // always write — nil clears the cover
         r.paidPrice    = Double(store.paidPrice)
         r.currentValue = Double(store.curValue)
         if let did = store.discogsId { r.discogsId = did }

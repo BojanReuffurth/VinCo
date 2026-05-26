@@ -23,8 +23,13 @@ struct EditFeature {
         var results:   [DiscogsResult] = []
         var searching: Bool            = false
 
+        // Scan-to-fill
+        var recognizing:    Bool    = false   // Vision OCR running on captured image
+        var scannedBarcode: String? = nil     // Last barcode value (guards duplicate events)
+
         // Cover art
-        var fetchingArt: Bool = false
+        var fetchingArt:      Bool     = false
+        var coverSuggestions: [String] = []   // 600×600 URLs to choose from
         // Price fetch
         var fetchingPrice: Bool = false
         // Tracklist
@@ -44,12 +49,18 @@ struct EditFeature {
         case resultsReceived([DiscogsResult])
         case resultPicked(DiscogsResult)
         case fetchArtTapped
+        case coverSuggestionsReceived([String])
+        case coverSuggestionPicked(String)   // user tapped one of the suggestion thumbnails
         case artReceived(Data?)
         case priceReceived(Double)
         case fetchTracksTapped
         case tracksReceived([Track])
         case addEmptyTrack
         case deleteTrack(IndexSet)
+        // Scan-to-fill
+        case barcodeDetected(String)        // raw barcode payload from DataScanner
+        case imageAcquired(Data)            // JPEG from camera or photo library
+        case recognitionCompleted(String)   // Vision OCR result → used as search query
         case saveTapped
         case cancelTapped
     }
@@ -115,14 +126,33 @@ struct EditFeature {
             case .fetchArtTapped:
                 guard !state.artist.isEmpty || !state.album.isEmpty else { return .none }
                 state.fetchingArt = true
+                state.coverSuggestions = []
                 let ar = state.artist, al = state.album
                 return .run { send in
-                    let res = await iTunes.fetch(ar, al)
-                    if let u = res.coverURL, let url = URL(string: u),
-                       let (data,_) = try? await URLSession.shared.data(from: url) {
-                        await send(.artReceived(data)); return
+                    // Fetch multiple cover options
+                    let urls = await iTunes.fetchCoverURLs(ar, al)
+                    await send(.coverSuggestionsReceived(urls))
+                    // Auto-select the first result
+                    if let first = urls.first,
+                       let url = URL(string: first),
+                       let (data, _) = try? await URLSession.shared.data(from: url) {
+                        await send(.artReceived(data))
+                    } else {
+                        await send(.artReceived(nil))
                     }
-                    await send(.artReceived(nil))
+                }
+
+            case .coverSuggestionsReceived(let urls):
+                state.coverSuggestions = urls
+                return .none
+
+            case .coverSuggestionPicked(let urlStr):
+                state.fetchingArt = true
+                return .run { send in
+                    guard let url = URL(string: urlStr),
+                          let (data, _) = try? await URLSession.shared.data(from: url)
+                    else { await send(.artReceived(nil)); return }
+                    await send(.artReceived(data))
                 }
 
             case .artReceived(let data):
@@ -157,6 +187,41 @@ struct EditFeature {
                 state.tracks.remove(atOffsets: offsets)
                 for i in state.tracks.indices { state.tracks[i].number = i + 1 }
                 return .none
+
+            // MARK: – Scan-to-fill actions
+
+            case .barcodeDetected(let barcode):
+                // Guard against the DataScanner firing multiple times for the same scan
+                guard state.scannedBarcode == nil else { return .none }
+                state.scannedBarcode = barcode
+                state.searching = true
+                state.results   = []
+                return .run { [barcode] send in
+                    let token = UserDefaults.standard.string(forKey: "rb_discogs") ?? ""
+                    let results = await discogs.searchBarcode(barcode, token)
+                    await send(.resultsReceived(results))
+                }
+
+            case .imageAcquired(let data):
+                state.recognizing = true
+                state.results     = []
+                return .run { send in
+                    let query = await recognizeAlbumText(from: data)
+                    await send(.recognitionCompleted(query))
+                }
+
+            case .recognitionCompleted(let raw):
+                state.recognizing = false
+                let q = raw.trimmingCharacters(in: .whitespaces)
+                guard !q.isEmpty else { return .none }
+                state.query     = q
+                state.searching = true
+                state.results   = []
+                return .run { [q] send in
+                    let token = UserDefaults.standard.string(forKey: "rb_discogs") ?? ""
+                    let results = await discogs.search(q, token)
+                    await send(.resultsReceived(results))
+                }
 
             case .saveTapped, .cancelTapped: return .none
             case .binding: return .none

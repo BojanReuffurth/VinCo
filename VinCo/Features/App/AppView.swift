@@ -30,8 +30,8 @@ struct AppView: View {
         }
         .environment(\.font, Theme.courier(14))
         .preferredColorScheme(settings.preferredScheme)
-        .onChange(of: settings.accentHex) { _, new in AppearanceSetup.apply(accent: new) }
-        .onChange(of: settings.schemeKey) { _, _   in AppearanceSetup.apply(accent: settings.accentHex) }
+        .onChange(of: settings.accentHex)  { _, new in AppearanceSetup.apply(accent: new) }
+        .onChange(of: settings.paletteKey) { _, _  in AppearanceSetup.apply(accent: settings.accentHex) }
         .sheet(isPresented: $showStats) {
             StatsView(store: store.scope(state: \.stats, action: \.stats))
                 .preferredColorScheme(settings.preferredScheme)
@@ -42,12 +42,19 @@ struct AppView: View {
                 .preferredColorScheme(settings.preferredScheme)
                 .environment(\.font, Theme.courier(14))
         }
+        .sheet(item: $store.scope(state: \.suggestions, action: \.suggestions)) { s in
+            SuggestionsView(store: s)
+                .preferredColorScheme(settings.preferredScheme)
+                .environment(\.font, Theme.courier(14))
+                .environment(settings)
+        }
     }
 
-    // MARK: – App header (vinyl icon + compact stats badge + action buttons)
+    // MARK: – App header
+
     private var appHeader: some View {
         HStack(spacing: 10) {
-            // Vinyl icon only (no text)
+            // Vinyl icon
             ZStack {
                 Circle().fill(settings.accentColor.opacity(0.15)).frame(width: 32, height: 32)
                 MiniVinylIcon(color: settings.accentColor, size: 20)
@@ -55,44 +62,42 @@ struct AppView: View {
 
             Spacer()
 
-            // Compact 2-row stats badge (labels top / values bottom)
-            if settings.pinnedStats.contains("value") {
+            // Compact 2-row stats badge
+            if settings.showValueBar {
                 collectionValueBadge
             }
 
-            // Spotify
-            Button {
-                if let u = URL(string: "spotify:"), UIApplication.shared.canOpenURL(u) {
-                    UIApplication.shared.open(u)
-                } else if let u = URL(string: "https://open.spotify.com") {
-                    UIApplication.shared.open(u)
+            // Record Suggestions
+            if settings.showSuggestions {
+                Button { store.send(.suggestionsTapped) } label: {
+                    Image(systemName: "wand.and.sparkles")
+                        .font(.system(size: 14))
+                        .foregroundStyle(settings.accentColor)
+                        .frame(width: 34, height: 34)
+                        .background(settings.bg2)
+                        .clipShape(Circle())
                 }
-            } label: {
-                Image(systemName: "music.note")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color(hex: "#1DB954"))
-                    .frame(width: 34, height: 34)
-                    .background(Theme.bg2)
-                    .clipShape(Circle())
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
-            Button { showStats = true } label: {
-                Image(systemName: "chart.bar.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.textS)
-                    .frame(width: 34, height: 34)
-                    .background(Theme.bg2)
-                    .clipShape(Circle())
+            if settings.showStatsBtn {
+                Button { showStats = true } label: {
+                    Image(systemName: "chart.bar.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.textS)
+                        .frame(width: 34, height: 34)
+                        .background(settings.bg2)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             Button { showSettings = true } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 14))
                     .foregroundStyle(Theme.textS)
                     .frame(width: 34, height: 34)
-                    .background(Theme.bg2)
+                    .background(settings.bg2)
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -101,9 +106,8 @@ struct AppView: View {
         .background(settings.bg1)
     }
 
-    // MARK: – Compact stats badge  (2 rows × 3 columns)
-    // Labels row on top, values row on bottom.  Each column is a VStack with
-    // label centred over value; VStack.frame(minWidth:) forces equal widths.
+    // MARK: – Compact stats badge
+
     private var collectionValueBadge: some View {
         let paid  = collectionRecords.compactMap(\.paidPrice).reduce(0, +)
         let value = collectionRecords.compactMap(\.currentValue).reduce(0, +)
@@ -142,6 +146,7 @@ struct AppView: View {
     }
 
     // MARK: – Bottom counts bar
+
     private var bottomCounts: some View {
         HStack(spacing: 0) {
             Button { store.send(.tabSelected(.collection)) } label: {
@@ -177,6 +182,7 @@ struct AppView: View {
     }
 
     // MARK: – Floating action button
+
     private var fab: some View {
         Button {
             store.send(store.tab == .wishlist ? .wishlist(.addTapped) : .collection(.addTapped))
@@ -192,3 +198,4 @@ struct AppView: View {
         .buttonStyle(.plain)
     }
 }
+

@@ -109,6 +109,10 @@ struct CollectionView: View {
                 .preferredColorScheme(settings.preferredScheme)
                 .environment(\.font, Theme.courier(14))
         }
+        .sheet(item: $store.scope(state: \.storeLocator, action: \.storeLocator)) { s in
+            StoreLocatorView(store: s)
+                .environment(settings)
+        }
     }
 
     private func dismissExpanded() {
@@ -226,6 +230,16 @@ struct CollectionView: View {
             .buttonStyle(.plain)
 
             Spacer()
+
+            // STORE LOCATOR
+            Button { store.send(.storeLocatorTapped) } label: {
+                Image(systemName: "mappin.and.ellipse")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.textS)
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(settings.bg2).clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
         .background(settings.bg1)
@@ -422,27 +436,42 @@ struct FlipDetailCard: View {
     var onDelete:  () -> Void = {}
     var onDismiss: () -> Void = {}
     @Environment(Settings.self) private var settings
-    @State private var isFlipped = false
+    @State private var isFlipped        = false
     @State private var isFetchingTracks = false
+    @State private var showFindOnline   = false
+    @State private var showConditionGuide = false
+    @StateObject private var audio      = AudioPlayer()
 
     var body: some View {
         ZStack {
+            // Front face — tappable to flip, hidden (and non-interactive) when showing back
             front
                 .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
                 .opacity(isFlipped ? 0 : 1)
+                .allowsHitTesting(!isFlipped)
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) { isFlipped = true }
+                }
+
+            // Back face — fully interactive; front is disabled behind it
             back
                 .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
                 .opacity(isFlipped ? 1 : 0)
+                .allowsHitTesting(isFlipped)
         }
         .clipShape(RoundedRectangle(cornerRadius: Theme.cardR + 4))
         .shadow(color: .black.opacity(0.65), radius: 28, x: 0, y: 10)
-        .onTapGesture {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) { isFlipped.toggle() }
-        }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 withAnimation(.spring(response: 0.55, dampingFraction: 0.76)) { isFlipped = true }
             }
+        }
+        .onDisappear { audio.stop() }
+        .sheet(isPresented: $showFindOnline) {
+            FindOnlineView(record: record).environment(settings)
+        }
+        .sheet(isPresented: $showConditionGuide) {
+            ConditionGuideView().environment(settings).presentationDetents([.medium, .large])
         }
     }
 
@@ -486,50 +515,72 @@ struct FlipDetailCard: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
-    // Back — full record detail
+    // Back — full record detail, fully interactive
     private var back: some View {
         VStack(spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(record.album).font(Theme.courier(15, .bold)).foregroundStyle(Theme.textP).lineLimit(1)
-                    Text(record.artist).font(Theme.courier(12)).foregroundStyle(Theme.textS).lineLimit(1)
+            // Header: flip-back chevron + title + dismiss
+            HStack(spacing: 8) {
+                Button {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) { isFlipped = false }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.textT)
+                }.buttonStyle(.plain)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(record.album).font(Theme.courier(14, .bold)).foregroundStyle(Theme.textP).lineLimit(1)
+                    Text(record.artist).font(Theme.courier(11)).foregroundStyle(Theme.textS).lineLimit(1)
                 }
                 Spacer()
                 Button { onDismiss() } label: {
                     Text("✕").font(Theme.courier(13)).foregroundStyle(Theme.textT)
                 }.buttonStyle(.plain)
             }
-            .padding(.horizontal, 14).padding(.top, 14).padding(.bottom, 10)
+            .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 8)
 
             Rectangle().fill(Theme.divide).frame(height: 1)
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    if !record.year.isEmpty      { infoRow("YEAR",      record.year)      }
-                    if !record.genre.isEmpty     { infoRow("GENRE",     record.genre)     }
-                    if !record.rpm.isEmpty       { infoRow("RPM",       record.rpm)       }
-                    if !record.condition.isEmpty { infoRow("COND.",     record.condition) }
-                    if !record.label.isEmpty     { infoRow("LABEL",     record.label)     }
-                    if !record.format.isEmpty    { infoRow("FORMAT",    record.format)    }
-                    if !record.country.isEmpty   { infoRow("COUNTRY",   record.country)   }
+                    if !record.year.isEmpty  { infoRow("YEAR",    record.year)  }
+                    if !record.genre.isEmpty { infoRow("GENRE",   record.genre) }
+                    if !record.rpm.isEmpty   { infoRow("RPM",     record.rpm)   }
+                    if !record.condition.isEmpty {
+                        conditionRow(record.condition)
+                    }
+                    if !record.label.isEmpty   { infoRow("LABEL",   record.label)   }
+                    if !record.format.isEmpty  { infoRow("FORMAT",  record.format)  }
+                    if !record.country.isEmpty { infoRow("COUNTRY", record.country) }
                     if !record.notes.isEmpty {
                         VStack(alignment: .leading, spacing: 3) {
                             Text("NOTES").font(Theme.courier(9, .semibold)).foregroundStyle(Theme.textT)
-                            Text(record.notes).font(Theme.courier(11)).foregroundStyle(Theme.textS).lineLimit(5)
+                            Text(record.notes).font(Theme.courier(11)).foregroundStyle(Theme.textS).lineLimit(4)
                         }
                         .padding(.horizontal, 14).padding(.vertical, 8)
                         Rectangle().fill(Theme.divide).frame(height: 1)
                     }
-                    if let p = record.paidPrice, let v = record.currentValue {
-                        HStack(spacing: 16) {
-                            valItem("PAID",  String(format: "%.0f", p))
-                            valItem("VALUE", String(format: "%.0f", v))
-                            let gain = ((v-p)/p)*100
-                            valItem("GAIN", String(format: "%+.0f%%", gain), gain >= 0 ? .green : .red)
+
+                    // Paid / Value / Gain — show whatever is available
+                    let hasPaid  = record.paidPrice    != nil
+                    let hasValue = record.currentValue != nil
+                    if hasPaid || hasValue {
+                        HStack(spacing: 14) {
+                            if let p = record.paidPrice {
+                                valItem("PAID",  "\(settings.currency) \(Int(p))", Theme.textP)
+                            }
+                            if let v = record.currentValue {
+                                valItem("VALUE", "\(settings.currency) \(Int(v))", Theme.textP)
+                            }
+                            if let p = record.paidPrice, let v = record.currentValue, p > 0 {
+                                let gain = ((v - p) / p) * 100
+                                valItem("GAIN", String(format: "%+.0f%%", gain), gain >= 0 ? .green : .red)
+                            }
                         }
                         .padding(.horizontal, 14).padding(.vertical, 8)
                         Rectangle().fill(Theme.divide).frame(height: 1)
                     }
+
                     // Tracklist
                     if record.tracks.isEmpty {
                         HStack {
@@ -555,17 +606,49 @@ struct FlipDetailCard: View {
                         }
                         Rectangle().fill(Theme.divide).frame(height: 1)
                     } else {
+                        if let err = audio.errorMsg {
+                            Text(err).font(Theme.courier(10)).foregroundStyle(.red)
+                                .padding(.horizontal, 14).padding(.top, 6)
+                        }
                         Text("TRACKLIST").font(Theme.courier(9, .semibold)).foregroundStyle(Theme.textT)
                             .padding(.horizontal, 14).padding(.top, 8).padding(.bottom, 2)
-                        ForEach(record.tracks) { track in
+                        ForEach(Array(record.tracks.enumerated()), id: \.element.id) { i, track in
+                            let isPlaying = audio.currentURL == track.preview && audio.isPlaying
                             VStack(spacing: 0) {
                                 HStack(spacing: 6) {
-                                    Text("\(track.number)").font(Theme.courier(9)).foregroundStyle(Theme.textT)
+                                    Text("\(track.number > 0 ? track.number : i+1)")
+                                        .font(Theme.courier(9)).foregroundStyle(Theme.textT)
                                         .frame(width: 18, alignment: .trailing)
-                                    Text(track.name).font(Theme.courier(11)).foregroundStyle(Theme.textS).lineLimit(1)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(track.name)
+                                            .font(Theme.courier(11))
+                                            .foregroundStyle(isPlaying ? settings.accentColor : Theme.textS)
+                                            .lineLimit(1)
+                                        if isPlaying {
+                                            GeometryReader { g in
+                                                ZStack(alignment: .leading) {
+                                                    Capsule().fill(Theme.divide).frame(height: 2)
+                                                    Capsule().fill(settings.accentColor)
+                                                        .frame(width: g.size.width * max(0, min(1, audio.progress)), height: 2)
+                                                }
+                                            }.frame(height: 2)
+                                        }
+                                    }
                                     Spacer()
                                     if !track.durationStr.isEmpty {
                                         Text(track.durationStr).font(Theme.courier(9)).foregroundStyle(Theme.textT)
+                                    }
+                                    if track.hasPreview {
+                                        Button {
+                                            isPlaying ? audio.pause() : audio.play(url: track.preview)
+                                        } label: {
+                                            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                                .font(.system(size: 18))
+                                                .foregroundStyle(settings.accentColor)
+                                        }
+                                        .buttonStyle(.plain)
+                                    } else {
+                                        Color.clear.frame(width: 18)
                                     }
                                 }
                                 .padding(.horizontal, 14).padding(.vertical, 5)
@@ -579,9 +662,13 @@ struct FlipDetailCard: View {
             // Actions
             HStack(spacing: 0) {
                 actionBtn("pencil",  settings.accentColor)  { onEdit()   }
-                Rectangle().fill(Theme.divide).frame(width:1).frame(maxHeight:.infinity)
+                Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: .infinity)
+                if record.isWishlist {
+                    actionBtn("cart.fill", settings.accentColor) { showFindOnline = true }
+                    Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: .infinity)
+                }
                 actionBtn(record.isWishlist ? "square.stack.3d.up" : "heart", Theme.textS) { onMove() }
-                Rectangle().fill(Theme.divide).frame(width:1).frame(maxHeight:.infinity)
+                Rectangle().fill(Theme.divide).frame(width: 1).frame(maxHeight: .infinity)
                 actionBtn("trash", .red) { onDelete() }
             }
             .frame(height: 50)
@@ -593,6 +680,23 @@ struct FlipDetailCard: View {
     private func flipBadge(_ text: String, _ bg: Color) -> some View {
         Text(text).font(Theme.courier(9, .bold)).foregroundStyle(.white)
             .padding(.horizontal, 6).padding(.vertical, 3).background(bg).clipShape(Capsule())
+    }
+
+    private func conditionRow(_ cond: String) -> some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 4) {
+                Text("COND").font(Theme.courier(9, .semibold)).foregroundStyle(Theme.textT).frame(width: 54, alignment: .leading)
+                Text(cond).font(Theme.courier(11)).foregroundStyle(settings.accentColor)
+                Button { showConditionGuide = true } label: {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textT)
+                }.buttonStyle(.plain)
+                Spacer()
+            }
+            .padding(.horizontal, 14).padding(.vertical, 7)
+            Rectangle().fill(Theme.divide).frame(height: 1)
+        }
     }
 
     private func infoRow(_ key: String, _ val: String) -> some View {
@@ -621,3 +725,5 @@ struct FlipDetailCard: View {
         }.buttonStyle(.plain)
     }
 }
+
+

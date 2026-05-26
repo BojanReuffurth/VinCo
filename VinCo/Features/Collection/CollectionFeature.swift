@@ -40,8 +40,9 @@ struct CollectionFeature {
         var country:   String   = "All"
 
         var showAdd:   Bool     = false
-        @Presents var detail: DetailFeature.State?
-        @Presents var edit:   EditFeature.State?
+        @Presents var detail:       DetailFeature.State?
+        @Presents var edit:         EditFeature.State?
+        @Presents var storeLocator: StoreLocatorFeature.State?
 
         var hasActiveFilter: Bool {
             genre != "All" || condition != "All" || format != "All" || country != "All"
@@ -62,8 +63,10 @@ struct CollectionFeature {
         case addTapped
         case deleteRecord(Record)
         case moveRecord(Record)
+        case storeLocatorTapped
         case detail(PresentationAction<DetailFeature.Action>)
         case edit(PresentationAction<EditFeature.Action>)
+        case storeLocator(PresentationAction<StoreLocatorFeature.Action>)
         case addDismissed
     }
 
@@ -85,11 +88,13 @@ struct CollectionFeature {
             case .editTapped(let r):   state.edit = .init(record: r, isWishlist: r.isWishlist); return .none
             case .addDismissed:        state.showAdd = false;               return .none
             case .recordTapped(let r): state.detail = .init(record: r);     return .none
+            case .storeLocatorTapped:  state.storeLocator = .init();        return .none
             case .deleteRecord, .moveRecord: return .none
-            case .detail, .edit, .binding:   return .none
+            case .detail, .edit, .storeLocator, .binding: return .none
             }
         }
-        .ifLet(\.$detail, action: \.detail) { DetailFeature() }
-        .ifLet(\.$edit,   action: \.edit)   { EditFeature()   }
+        .ifLet(\.$detail,       action: \.detail)       { DetailFeature()       }
+        .ifLet(\.$edit,         action: \.edit)         { EditFeature()         }
+        .ifLet(\.$storeLocator, action: \.storeLocator) { StoreLocatorFeature() }
     }
 }
