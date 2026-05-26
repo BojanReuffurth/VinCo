@@ -24,12 +24,16 @@ struct EditFeature {
         var searching: Bool            = false
 
         // Scan-to-fill
-        var recognizing:    Bool    = false   // Vision OCR running on captured image
-        var scannedBarcode: String? = nil     // Last barcode value (guards duplicate events)
+        var recognizing:    Bool     = false  // Vision OCR running on captured image
+        var scannedBarcode: String?  = nil    // Last barcode value (guards duplicate events)
+        var ocrLines:       [String] = []     // Raw prominent lines from last OCR pass
 
         // Cover art
         var fetchingArt:      Bool     = false
-        var coverSuggestions: [String] = []   // 600×600 URLs to choose from
+        var coverSuggestions: [String] = []   // ordered list of cover URLs to choose from
+        /// Cover image URL from the Discogs release the user picked. Prepended ahead of
+        /// iTunes results so the exact-release art is always the first option shown.
+        var discogsCoverURL:  String   = ""
         // Price fetch
         var fetchingPrice: Bool = false
         // Tracklist
@@ -58,9 +62,9 @@ struct EditFeature {
         case addEmptyTrack
         case deleteTrack(IndexSet)
         // Scan-to-fill
-        case barcodeDetected(String)        // raw barcode payload from DataScanner
-        case imageAcquired(Data)            // JPEG from camera or photo library
-        case recognitionCompleted(String)   // Vision OCR result → used as search query
+        case barcodeDetected(String)                  // raw barcode payload from DataScanner
+        case imageAcquired(Data)                      // JPEG from camera or photo library
+        case recognitionCompleted(String, [String])   // (bestQuery, rawLines) from Vision OCR
         case saveTapped
         case cancelTapped
     }
@@ -109,6 +113,8 @@ struct EditFeature {
                 if !r.format.isEmpty  { state.format  = r.format  }
                 if !r.genre.isEmpty && state.genre.isEmpty { state.genre = r.genre }
                 state.discogsId = r.id > 0 ? r.id : nil
+                // Store the Discogs cover image so fetchArtTapped can use it as first option.
+                state.discogsCoverURL = r.coverImageURL
                 state.results = []; state.query = ""
                 let rid = r.id
                 return .merge(
@@ -128,12 +134,17 @@ struct EditFeature {
                 state.fetchingArt = true
                 state.coverSuggestions = []
                 let ar = state.artist, al = state.album
+                let discogsCover = state.discogsCoverURL   // exact cover from the picked release
                 return .run { send in
-                    // Fetch multiple cover options
-                    let urls = await iTunes.fetchCoverURLs(ar, al)
-                    await send(.coverSuggestionsReceived(urls))
-                    // Auto-select the first result
-                    if let first = urls.first,
+                    // Fetch iTunes alternatives in parallel with the Discogs cover download.
+                    let itunesURLs = await iTunes.fetchCoverURLs(ar, al)
+                    // Build ordered list: Discogs exact release first, then iTunes alternatives.
+                    var combined: [String] = []
+                    if !discogsCover.isEmpty { combined.append(discogsCover) }
+                    for u in itunesURLs where u != discogsCover { combined.append(u) }
+                    await send(.coverSuggestionsReceived(combined))
+                    // Auto-download the first (highest-priority) cover.
+                    if let first = combined.first,
                        let url = URL(string: first),
                        let (data, _) = try? await URLSession.shared.data(from: url) {
                         await send(.artReceived(data))
@@ -205,16 +216,19 @@ struct EditFeature {
             case .imageAcquired(let data):
                 state.recognizing = true
                 state.results     = []
+                state.ocrLines    = []
                 return .run { send in
-                    let query = await recognizeAlbumText(from: data)
-                    await send(.recognitionCompleted(query))
+                    let (query, lines) = await recognizeAlbumText(from: data)
+                    await send(.recognitionCompleted(query, lines))
                 }
 
-            case .recognitionCompleted(let raw):
+            case .recognitionCompleted(let raw, let lines):
                 state.recognizing = false
+                state.ocrLines    = lines
                 let q = raw.trimmingCharacters(in: .whitespaces)
+                // Always pre-fill the search field so the user can see & refine the query
+                if !q.isEmpty { state.query = q }
                 guard !q.isEmpty else { return .none }
-                state.query     = q
                 state.searching = true
                 state.results   = []
                 return .run { [q] send in

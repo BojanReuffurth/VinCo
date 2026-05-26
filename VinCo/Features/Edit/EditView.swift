@@ -1,7 +1,5 @@
 import SwiftUI
 import SwiftData
-import PhotosUI
-import VisionKit
 import ComposableArchitecture
 
 struct EditView: View {
@@ -15,7 +13,6 @@ struct EditView: View {
     @State private var showBarcodeScanner = false
     @State private var showCameraCapture  = false
     @State private var showPhotoPicker    = false
-    @State private var photoItem: PhotosPickerItem? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -76,16 +73,17 @@ struct EditView: View {
             )
             .ignoresSafeArea()
         }
-        // Photo library picker — for screenshot / saved image import
-        .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem, matching: .images)
-        .onChange(of: photoItem) { _, item in
-            guard let item else { return }
-            Task {
-                if let data = try? await item.loadTransferable(type: Data.self) {
+        // Photo library picker — PHPickerViewController handles HEIC, WebP, iCloud
+        // photos and any other format, unlike loadTransferable which silently fails
+        .sheet(isPresented: $showPhotoPicker) {
+            PhotoLibraryPicker(
+                onImageSelected: { data in
+                    showPhotoPicker = false
                     store.send(.imageAcquired(data))
-                }
-                photoItem = nil
-            }
+                },
+                onCancel: { showPhotoPicker = false }
+            )
+            .ignoresSafeArea()
         }
     }
 
@@ -115,20 +113,23 @@ struct EditView: View {
                         ) { showPhotoPicker = true }
                     }
 
-                    // Status row: analysing / searching / scanned-barcode badge
+                    // Status row — shows different content depending on scan state
                     if store.recognizing {
+                        // Vision OCR running
                         HStack(spacing: 8) {
                             ProgressView().scaleEffect(0.75).tint(settings.accentColor)
                             Text("Analysing image…")
                                 .font(Theme.courier(12)).foregroundStyle(Theme.textS)
                         }
                     } else if store.searching {
+                        // Discogs lookup in progress
                         HStack(spacing: 8) {
                             ProgressView().scaleEffect(0.75).tint(settings.accentColor)
                             Text(store.scannedBarcode != nil ? "Looking up barcode…" : "Searching Discogs…")
                                 .font(Theme.courier(12)).foregroundStyle(Theme.textS)
                         }
                     } else if let barcode = store.scannedBarcode {
+                        // Barcode scanned — show value + re-scan option
                         HStack(spacing: 6) {
                             Image(systemName: "barcode")
                                 .font(.system(size: 11)).foregroundStyle(Theme.textT)
@@ -136,7 +137,6 @@ struct EditView: View {
                                 .font(Theme.courier(11)).foregroundStyle(Theme.textT)
                                 .lineLimit(1)
                             Spacer()
-                            // Allow re-scanning
                             Button {
                                 store.scannedBarcode = nil
                                 showBarcodeScanner = true
@@ -146,6 +146,37 @@ struct EditView: View {
                             }
                             .buttonStyle(.plain)
                         }
+                    } else if !store.ocrLines.isEmpty {
+                        // OCR completed — show what was recognised and search outcome
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "text.viewfinder")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(settings.accentColor)
+                                Text("Recognised text")
+                                    .font(Theme.courier(10, .semibold))
+                                    .foregroundStyle(Theme.textT)
+                                Spacer()
+                                if store.results.isEmpty {
+                                    // Search returned nothing — nudge user to refine
+                                    Text("No matches — refine below ↓")
+                                        .font(Theme.courier(10))
+                                        .foregroundStyle(.orange)
+                                } else {
+                                    Text("\(store.results.count) match\(store.results.count == 1 ? "" : "es")")
+                                        .font(Theme.courier(10))
+                                        .foregroundStyle(.green)
+                                }
+                            }
+                            // Show the top 3 OCR lines so the user can see what was extracted
+                            ForEach(store.ocrLines.prefix(3), id: \.self) { line in
+                                Text("\"\(line)\"")
+                                    .font(Theme.courier(11))
+                                    .foregroundStyle(Theme.textS)
+                                    .lineLimit(1)
+                            }
+                        }
+                        .padding(.vertical, 2)
                     }
                 }
                 .padding(.vertical, 4)

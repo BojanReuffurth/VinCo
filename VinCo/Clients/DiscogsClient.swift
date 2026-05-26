@@ -5,6 +5,8 @@ struct DiscogsResult: Equatable, Identifiable {
     let id: Int; let title: String; let subtitle: String
     let year: String; let label: String; let country: String; let format: String
     let genre: String; let thumbURL: String
+    /// Larger cover image from the search result (typically 250–500 px). Falls back to thumbURL.
+    let coverImageURL: String
 }
 
 struct DiscogsClient {
@@ -32,9 +34,11 @@ extension DiscogsClient: DependencyKey {
                     let fm = r.format?.first ?? ""
                     let gn = r.genre?.first ?? ""
                     let th = r.thumb ?? ""
+                    let ci = r.cover_image ?? th  // prefer larger cover_image; fall back to thumb
                     return DiscogsResult(id: r.id, title: r.title,
                         subtitle: [yr, lb, co].filter { !$0.isEmpty }.joined(separator: " · "),
-                        year: yr, label: lb, country: co, format: fm, genre: gn, thumbURL: th)
+                        year: yr, label: lb, country: co, format: fm, genre: gn,
+                        thumbURL: th, coverImageURL: ci)
                 }
             } catch { return [] }
         },
@@ -54,9 +58,11 @@ extension DiscogsClient: DependencyKey {
                     let fm = r.format?.first ?? ""
                     let gn = r.genre?.first ?? ""
                     let th = r.thumb ?? ""
+                    let ci = r.cover_image ?? th
                     return DiscogsResult(id: r.id, title: r.title,
                         subtitle: [yr, lb, co].filter { !$0.isEmpty }.joined(separator: " · "),
-                        year: yr, label: lb, country: co, format: fm, genre: gn, thumbURL: th)
+                        year: yr, label: lb, country: co, format: fm, genre: gn,
+                        thumbURL: th, coverImageURL: ci)
                 }
             } catch { return [] }
         },
@@ -81,6 +87,8 @@ private nonisolated struct DRelease:    Decodable {
     let id: Int; let title: String; let year: String?
     let label: [String]?; let country: String?; let format: [String]?
     let genre: [String]?; let thumb: String?
+    /// Larger cover returned by the Discogs search API (absent for some releases).
+    let cover_image: String?
 }
 private nonisolated struct ReleaseResp: Decodable { let lowest_price: Double? }
 
